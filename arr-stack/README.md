@@ -8,6 +8,7 @@ A full guideline and articles on building your own server, from hardware to soft
 - [Running](#running)
   - [Starting the stack](#starting-the-stack)
   - [Configuring the stack](#configuring-the-stack)
+  - [Back-up](#back-up)
 
 
 ## Understanding the setup
@@ -57,10 +58,10 @@ The stack uses the concept of two separate directories - one for downloads, one 
 The directories `downloads` and `library` (on the host if mounted) must both be in the same parent directory and mounted as a single item.
 
 Example - if you have:
-- `D:\Multimedia\Movies` -> contains the movies
-- `D:\Multimedia\Downloads` -> contains the downloads
+- `/mnt/sda2/MULTIMEDIA/Movies` -> contains the movies
+- `/mnt/sda2/MULTIMEDIA/Downloads` -> contains the downloads
 
-You will have to mount the whole `D:\Multimedia` directory (for radarr for example it will be `D:\Multimedia:/data/movies`).
+You will have to mount the whole `/mnt/sda2/MULTIMEDIA` directory (for radarr for example it will be `/mnt/sda2/MULTIMEDIA:/data/movies`).
 
 Using 2 mounts (one for the library and one for downloads directory) won't work because docker creates them as 2 separate partitions and **hardlinks** don't work between separate partitions.
 
@@ -95,8 +96,8 @@ Then, for Radarr:
    5. Do not enable "Remove completed" if you want to keep seeding, instead configure the seeding settings from the download client itself
 4. Settings -> Download Clients - Add Remote path mapping. This is require for radarr to translate the path used by the download client with its local path from the running container
    1. Host: `host.docker.internal`
-   2. Remote path: `D:\Multimedia\Downloads` (the path from your host where you set the downloads)
-   3. Local path: `/data/movies/Downloads` (the mounted movie directory, but with the Downloads folder)
+   2. Remote path: `/mnt/sda2/MULTIMEDIA/Downloads` (the path from your host where you set the downloads)
+   3. Local path: `/mnt/sda2/MULTIMEDIA/Downloads` (the mounted movie directory, but with the Downloads folder)
 5. Add all the indexers you have set-up in jackett through Settings -> Indexers:
    1. URL: copy the tornzab url from jackett, but replace `localhost` with `jackett` (each container is accessible through its name inside the compose network)
    2. API Key: copy the API Key from jackett
@@ -112,3 +113,10 @@ Then, for Radarr:
    3. For example a profile named `HQ Releasers` would have the following different conditions: `QxR`, `JUDAS`, `FLUX` and would then be setup in Profiles with `+30`
    4. For example a profile named `Bad releasers` would have the following different conditions: `MeGusta`, `PSYPHER` and would then be setup in Profiles with `-100`
    5. Then in the profile you have setup, set minimum score to `+20` - this would make sure that each automatic download by radarr will be picked up first in the order of the formats set-up in Profiles, and for each format it would only check items with a score above 20
+
+
+### Back-up
+
+The [`config`](config) directory contains all of the configuration for the stack (created after first run). This is the folder you have to back-up / copy across installations, alongside, of course, your data folders.
+
+When adding a new storage to the setup, modify the `.env` and the `docker-compose.yml` and re-run.

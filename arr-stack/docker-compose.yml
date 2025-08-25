@@ -16,7 +16,7 @@ services:
       - AUTO_UPDATE=true
     volumes:
       - ./config/jackett:/config
-      - ./config/jackett/downloads:/downloads
+      - ./config/jackett-downloads:/downloads
     depends_on:
       - flaresolverr
   radarr:
@@ -28,11 +28,13 @@ services:
       - PGID=1000
       - TZ=${TimeZone}
     volumes:
-      - ./config/radarr/:/config
+      - ./config/radarr:/config
       - ${MEDIA_SOURCE_1}:/data/${MOVIES_MOUNT_1}
       - ${MEDIA_SOURCE_2}:/data/${MOVIES_MOUNT_2}
     depends_on:
       - jackett
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
   sonarr:
     image: lscr.io/linuxserver/sonarr:latest
     restart: unless-stopped
@@ -47,3 +49,5 @@ services:
       - ${MEDIA_SOURCE_2}:/data/${TV_MOUNT_2}
     depends_on:
       - jackett
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
