@@ -1,0 +1,32 @@
+services:
+  # The Jenkins Controller (Master)
+  jenkins-controller:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-controller
+    ports:
+      - 9830:8080
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    environment:
+      # This allows you to pass pre-generated SSH keys for the agent
+      - JENKINS_AGENT_SSH_PUBKEY=${JENKINS_AGENT_SSH_PUBKEY}
+
+  # The SSH Agent with Docker CLI installed
+  jenkins-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+      args:
+        - DOCKER_GID=${DOCKER_GID} # Ensure the agent can run Docker commands by sending the same GID as the host
+    container_name: jenkins-agent
+    volumes:
+      # Docker-out-of-Docker: Give the agent access to the host's Docker engine
+      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins_agent_home:/home/jenkins/agent
+    environment:
+      # This tells the agent to accept the public key from the controller
+      - JENKINS_AGENT_SSH_PUBKEY=${JENKINS_AGENT_SSH_PUBKEY}
+
+volumes:
+  jenkins_home:
+  jenkins_agent_home:
