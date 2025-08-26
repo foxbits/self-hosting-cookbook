@@ -75,8 +75,9 @@ You will have to have `docker` and `docker compose` installed on the host machin
 Make sure that you setup the environment variables correctly, as per instructions, add entries for each of the mounted HDDs you want to use.
 
 Then use:
-- [`run.sh`] - to just run the system (basic docker compose up command)
-- [`run-and-update.sh`] - to first update the stack, and then run it
+- `make pull` - to update the arr stack images to latest version
+- `make run` - to just run the system (basic docker compose up command)
+- `make run-update` - to first update the stack (pull), and then run it (run)
 
 If you have a running system and want to update it, use the same update commands.
 
