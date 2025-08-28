@@ -1,6 +1,6 @@
 This is the docker compose setup for the official images for the *arr stack: [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr), [jackett](https://github.com/Jackett/Jackett) and [flaresolverr](https://github.com/FlareSolverr/FlareSolverr).
 
-A full guideline and articles on building your own server, from hardware to software and tips and tricks can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
+A full guideline and articles on building your own server, from hardware to software and tips and tricks can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com/p/how-to-build-the-best-self-hosted).
 
 - [Understanding the setup](#understanding-the-setup)
   - [Environment variables](#environment-variables)
