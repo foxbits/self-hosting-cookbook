@@ -3,6 +3,7 @@ services:
   jenkins-controller:
     image: jenkins/jenkins:lts
     container_name: jenkins-controller
+    restart: unless-stopped
     ports:
       - 9830:8080
     volumes:
@@ -19,6 +20,7 @@ services:
       args:
         - DOCKER_GID=${DOCKER_GID} # Ensure the agent can run Docker commands by sending the same GID as the host
     container_name: jenkins-agent
+    restart: unless-stopped
     volumes:
       # Docker-out-of-Docker: Give the agent access to the host's Docker engine
       - /var/run/docker.sock:/var/run/docker.sock
