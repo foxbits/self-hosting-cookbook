@@ -1,0 +1,12 @@
+services:
+  scrobblex:
+    image: rickgc/scrobblex:latest
+    container_name: scrobblex
+    restart: unless-stopped
+    ports:
+      - 3090:3090
+    environment:
+      - TRAKT_ID=${TRAKT_ID}
+      - TRAKT_SECRET=${TRAKT_SECRET}
+    volumes:
+      - ./scrobblex:/app/data

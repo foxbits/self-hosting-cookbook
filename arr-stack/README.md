@@ -27,29 +27,14 @@ The stack is configured to restart automatically, so on a machine restart, it al
 
 ### Environment variables
 
-The setup uses the [`.env`](env) file to define settings used in the docker compose, mainly the [timezone](https://timezonedb.com/time-zones) and mount paths.
+The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
+- `TimeZone`: a valid timezone in ISO format
+- settings for each mount (at least 1) - to mount different hard-drives, let's say HDD number `n` you will have to add each of the three setup entries for it:
+   - `MEDIA_SOURCE_n`: defines the path where the data is stored on the host
+   - `MOVIES_MOUNT_n`: defines the path (relative to `/data/` directory) of the mounted folder for movies (Radarr)
+   - `TV_MOUNT_n`: same as previous, but for TV Shows (Sonarr)
 
-To mount different hard-drives, let's say HDD number `n` you will have to add each of the three setup entries for it:
-- `MEDIA_SOURCE_n`: defines the path where the data is stored on the host
-- `MOVIES_MOUNT_n`: defines the path (relative to `/data/` directory) of the mounted folder for movies (Radarr)
-- `TV_MOUNT_n`: same as previous, but for TV Shows (Sonarr)
-
-And then they have to be added in the `volumes` section in the [`docker-compose.yml`](docker-compose.yml) file for both `radarr` and `sonarr`. By default this setup has an example of adding two mounted drives, and the `.env` file would look like:
-
-```
-# Media source #1 (host) and mounts (relative)
-MEDIA_SOURCE_1=/mnt/sda2/MULTIMEDIA
-MOVIES_MOUNT_1=movies-e
-TV_MOUNT_1=tv-e
-
-# Media source #2 (host) and mounts (relative)
-MEDIA_SOURCE_2=/mnt/sda3/MULTIMEDIA
-MOVIES_MOUNT_2=movies-f
-TV_MOUNT_2=tv-f
-
-# Timezone
-TimeZone=Europe/Bucharest
-```
+And then they have to be added in the `volumes` section in the [`docker-compose.yml`](docker-compose.yml) file for both `radarr` and `sonarr`. By default this setup has an example of adding two mounted drives.
 
 ### Important about mounted directories
 

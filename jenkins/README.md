@@ -23,14 +23,8 @@ The **agent [`Dockerfile`](Dockerfile)** builds on top of the official ssh agent
 
 ### Environment variables
 
-The setup uses the [`.env`](env) file to define settings used in the docker compose, mainly the [JENKINS_AGENT_SSH_PUBKEY](https://hub.docker.com/r/jenkins/ssh-agent). 
-
-Generate a new ssh key on your machine with `ssh-keygen -t ed25519 -C "Jenkins Private Runner Key"` and pass the public key in the `.env` file (that you must create) e.g. 
-
-```
-JENKINS_AGENT_SSH_PUBKEY=ssh-ed25519 bla bla bla Jenkins Private Runner Key
-
-```
+The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
+- [JENKINS_AGENT_SSH_PUBKEY](https://hub.docker.com/r/jenkins/ssh-agent): generate a new ssh key on your machine with `ssh-keygen -t ed25519 -C "Jenkins Private Runner Key"` and pass the public key here
 
 ## Running
 
