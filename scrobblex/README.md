@@ -25,6 +25,15 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ## Running
 
+### Pre-configuration
+
+1. Go to https://trakt.tv/oauth/applications/new 
+2. As name, use something like "plex scrobbler (scrobblex)"
+3. As description, use something like "Application to scrobble from plex through scrobblex"
+4. As Redirect uri, use http://localhost:3090/authorize on the first line (plex and scrobblex will be on the same server) and add new lines for each URL that you access your server with - IP or name, for example http://plex-server:3090/authorize
+5. For permissions, enable `checkin` (optional) and `scrobble` (mandatory)
+6. Use the application id and application secret in the environment variables 
+
 ### Starting the stack
 
 You will have to have `docker` and `docker compose` installed on the host machine.
@@ -39,13 +48,12 @@ Then use:
 If you have a running system and want to update it, use the same update commands.
 
 ### Configuring the stack
+Assuming you access your server using the resolved name `plex-server`, do the following steps:
 
-1. Go to https://trakt.tv/oauth/applications/new 
-2. As name, use something like "plex scrobbler (scrobblex)"
-3. As description, use something like "Application to scrobble from plex through scrobblex"
-4. As Redirect uri, use http://localhost:3090/authorize  (plex and scrobblex will be on the same server)
-5. For permissions, enable `checkin` and `scrobble`
-6. Use the application id and application secret in the environment variables 
+1. Go to the running scrobblex instance - e.g. http://plex-server:3090
+2. Go to step 2 and do the trakt authorization flow
+3. Go to your Plex Server (http://plex-server:32400/web) -> Settings -> Webhooks and add as webhook the scrobblex instance (http://plex-server:3090/plex)
+4. Watch a movie or an episode of something and see if it gets scrobbled! Note that Plex [webhooks](https://support.plex.tv/articles/115002267687-webhooks/?utm_campaign=Plex%20Apps&utm_medium=Plex%20Web&utm_source=Plex%20Apps) are not triggered when you manually mark something as watched.
 
 ### Back-up
 
