@@ -33,6 +33,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 4. As Redirect uri, use http://localhost:3090/authorize on the first line (plex and scrobblex will be on the same server) and add new lines for each URL that you access your server with - IP or name, for example http://plex-server:3090/authorize
 5. For permissions, enable `checkin` (optional) and `scrobble` (mandatory)
 6. Use the application id and application secret in the environment variables 
+7. Optionally, if you want to scrobble only for a specific user, also set the PLEX_USER environment variable (otherwise all the scrobbles from all the users will go in to the trakt account)
 
 ### Starting the stack
 
