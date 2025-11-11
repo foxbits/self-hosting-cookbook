@@ -39,4 +39,4 @@ Assuming you access your server using the resolved name `plex-server`, do the fo
 
 ### Back-up
 
-The scrobblex configuration and data will be stored in the `portainer_data` volume - this is what you have to back-up.
+The portainer configuration and data will be stored in the `portainer_data` volume - this is what you have to back-up.
