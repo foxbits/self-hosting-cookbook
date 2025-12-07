@@ -10,8 +10,8 @@ services:
     restart: unless-stopped
     ports: [9117:9117]
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${STACK_UID}
+      - PGID=${STACK_GID}
       - TZ=${TimeZone}
       - AUTO_UPDATE=true
     volumes:
@@ -24,8 +24,8 @@ services:
     restart: unless-stopped
     ports: [7878:7878]
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${STACK_UID}
+      - PGID=${STACK_GID}
       - TZ=${TimeZone}
     volumes:
       - ./config/radarr:/config
@@ -40,8 +40,8 @@ services:
     restart: unless-stopped
     ports: [8989:8989]
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=${STACK_UID}
+      - PGID=${STACK_GID}
       - TZ=${TimeZone}
     volumes:
       - ./config/sonarr:/config
