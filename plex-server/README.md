@@ -1,4 +1,4 @@
-This is the docker compose setup for [Plex Media Server](https://www.plex.tv) - one of the top movies, TV and music personal servers.
+This is the docker compose setup for [Plex Media Server](https://www.plex.tv) - one of the top movies, TV and music personal servers management systems.
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
