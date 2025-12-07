@@ -1,0 +1,17 @@
+services:
+  plex-server:
+    image: plexinc/pms-docker
+    container_name: plex-server
+    restart: unless-stopped
+    network_mode: "host"
+    environment:
+      - TZ=${TimeZone}
+      - PLEX_UID=${PLEX_UID}
+      - PLEX_GID=${PLEX_GID}
+    volumes:
+      - ${CONFIG_PATH}:/config
+      - ${TRANSCODE_PATH}:/transcode
+      - ${MEDIA_SOURCE_1}:${MEDIA_SOURCE_1}
+      - ${MEDIA_SOURCE_2}:${MEDIA_SOURCE_2}
+    devices:
+      - /dev/dri:/dev/dri  # Hardware transcoding (Intel/AMD GPU)
