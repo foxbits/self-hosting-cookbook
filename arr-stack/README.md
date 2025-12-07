@@ -33,6 +33,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
    - `MEDIA_SOURCE_n`: defines the path where the data is stored on the host
    - `MOVIES_MOUNT_n`: defines the path (relative to `/data/` directory) of the mounted folder for movies (Radarr)
    - `TV_MOUNT_n`: same as previous, but for TV Shows (Sonarr)
+- `STACK_UID` and `STACK_GID`: define the IDs that will be used by plex for file ownership and should coincide with your own user; since by default a normal user has id/gid as `1000` the defaults should be ok, but run `id $USER` to find out your IDs and replace if necessary
 
 And then they have to be added in the `volumes` section in the [`docker-compose.yml`](docker-compose.yml) file for both `radarr` and `sonarr`. By default this setup has an example of adding two mounted drives.
 
