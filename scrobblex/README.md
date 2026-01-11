@@ -5,6 +5,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 - [Understanding the setup](#understanding-the-setup)
   - [Environment variables](#environment-variables)
 - [Running](#running)
+  - [Pre-configuration](#pre-configuration)
   - [Starting the stack](#starting-the-stack)
   - [Configuring the stack](#configuring-the-stack)
   - [Back-up](#back-up)
@@ -21,6 +22,7 @@ The stack is configured to restart automatically, so on a machine restart, it al
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
 - `TRAKT_ID`: the trakt.tv application id
 - `TRAKT_SECRET`: the trakt.tv application secret
+- `PLEX_USER`: the plex username (or username list, separated by comma) to allow scrobbling for
 
 
 ## Running
