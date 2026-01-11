@@ -8,5 +8,6 @@ services:
     environment:
       - TRAKT_ID=${TRAKT_ID}
       - TRAKT_SECRET=${TRAKT_SECRET}
+      - PLEX_USER=${PLEX_USER}
     volumes:
       - ./scrobblex:/app/data
