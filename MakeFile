@@ -1,0 +1,8 @@
+.PHONY: update-all
+
+update-all:
+	@for dir in */; do \
+		if [ -f "$$dir/Makefile" ]; then \
+			$(MAKE) -C "$$dir" update-run; \
+		fi; \
+	done
