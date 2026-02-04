@@ -1,0 +1,4 @@
+localhost, fx-plex-server {
+    tls internal
+    reverse_proxy importer:8080
+}
