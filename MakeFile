@@ -1,8 +1,24 @@
 .PHONY: update-all
 
+SHELL := /bin/sh
+
 update-all:
-	@for dir in */; do \
+	@if [ -f .env ]; then . ./.env; fi ; \
+	EXCLUDE="$${EXCLUDE}" ; \
+	echo "Exclusions: $${EXCLUDE:-<none>}" ; \
+	for dir in */; do \
+		name=$${dir%/} ; \
+		skip=0 ; \
+		for e in $$EXCLUDE; do \
+			if [ "$$name" = "$$e" ]; then \
+				skip=1 ; break ; \
+			fi ; \
+		done ; \
+		if [ $$skip -eq 1 ]; then \
+			echo "Skipping $$dir" ; \
+			continue ; \
+		fi ; \
 		if [ -f "$$dir/Makefile" ]; then \
-			$(MAKE) -C "$$dir" update-run; \
-		fi; \
+			$(MAKE) -C "$$dir" update-run ; \
+		fi ; \
 	done

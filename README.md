@@ -9,5 +9,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 6. [`scrobblex`](scrobblex) - docker compose setup for a simple [scrobblex](https://github.com/ryck/scrobblex) agent that can be connected to Plex and used to scrobble Plex plays live into trakt.tv.
 
 ## Available commands
+
 The following commands are available at repo-level (they require `make`):
-1. `make update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each)
+
+1. `make update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each); if you want to exclude certain apps (e.g. if you do not use them), add a `.env` file and set the `EXCLUDE` value there as a space-separated list of directory names
