@@ -8,8 +8,21 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 5. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
 6. [`scrobblex`](scrobblex) - docker compose setup for a simple [scrobblex](https://github.com/ryck/scrobblex) agent that can be connected to Plex and used to scrobble Plex plays live into trakt.tv.
 
-## Available commands
+
+## How to use
+
+### Pre-requisites
+
+1. Before using any services from this suite, you need to create the underlying home lab docker network, by running `make create-network`
+
+### How to run
+
+1. Select a service you want to use and follow the instructions from the Readme to set it up
+2. Use `make run-update-all` to update all the running services (make sure to set the `EXCLUDE` env var)
+
+### Available commands
 
 The following commands are available at repo-level (they require `make`):
 
-1. `make update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each); if you want to exclude certain apps (e.g. if you do not use them), add a `.env` file and set the `EXCLUDE` value there as a space-separated list of directory names
+1. `make create-network` - creates the underlying docker network (`home-lab-net`) that is required for inter-container communication
+2. `make run-update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each); if you want to exclude certain apps (e.g. if you do not use them), add a `.env` file and set the `EXCLUDE` value there as a space-separated list of directory names
