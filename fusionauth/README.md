@@ -48,7 +48,6 @@ Then use:
 - `make run-update` - to first update the stack (pull), and then run it (run)
 
 FusionAuth will be available at [http://localhost:9701](http://localhost:9701).
-
 You will need to configure your HTTPS reverse proxy on top of it and then access it only through the proxy, not directly.
 
 
