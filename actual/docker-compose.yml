@@ -14,3 +14,22 @@ services:
       retries: 3
       start_period: 20s
     restart: unless-stopped
+  actual-ical:
+    image: ghcr.io/matheusvellone/actual-ical
+    restart: unless-stopped
+    ports:
+      - 9861:3000
+    environment:
+      ACTUAL_SERVER: ${ACTUAL_SERVER}
+      ACTUAL_MAIN_PASSWORD: ${ACTUAL_MAIN_PASSWORD}
+      ACTUAL_SYNC_ID: ${ACTUAL_SYNC_ID}
+      SYNC_ID_AS_URL: 'true'
+      ACTUAL_SYNC_PASSWORD: ${ACTUAL_SYNC_PASSWORD}
+      TZ: ${TZ}
+      LOCALE: ${LOCALE}
+      CURRENCY: ${CURRENCY}
+    volumes:
+      - actual-ical:/app/.actual-cache
+
+volumes:
+  actual-ical:
