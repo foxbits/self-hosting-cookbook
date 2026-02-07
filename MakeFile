@@ -1,8 +1,8 @@
-.PHONY: update-all
+.PHONY: run-update-all create-network
 
 SHELL := /bin/sh
 
-update-all:
+run-update-all:
 	@if [ -f .env ]; then . ./.env; fi ; \
 	EXCLUDE="$${EXCLUDE}" ; \
 	echo "Exclusions: $${EXCLUDE:-<none>}" ; \
@@ -22,3 +22,6 @@ update-all:
 			$(MAKE) -C "$$dir" update-run ; \
 		fi ; \
 	done
+
+create-network:
+	docker network create home-lab-net || true
