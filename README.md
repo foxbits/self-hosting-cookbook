@@ -26,7 +26,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 
 ### Available commands
 
-The following commands are available at repo-level (they require `make`):
+The following commands are available at repo-level in the [Makefile](Makefile) (they require `make`):
 
 1. `make create-network` - creates the underlying docker network (`home-lab-net`) that is required for inter-container communication
 2. `make run-update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each); if you want to exclude certain apps (e.g. if you do not use them), add a `.env` file and set the `EXCLUDE` value there as a space-separated list of directory names
