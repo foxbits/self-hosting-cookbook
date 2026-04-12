@@ -22,7 +22,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
       # Root disk host
-      - /.beszel:/extra-filesystems/root:ro
+      - /.beszel:/extra-filesystems/dm-0:ro
       # Additional disks
       # - /mnt/sda2/.beszel:/extra-filesystems/sdc2__MEDIA_E:ro
       # - /mnt/sda3/.beszel:/extra-filesystems/sdc2__MEDIA_F:ro
@@ -31,6 +31,7 @@ services:
       - apparmor:unconfined
     environment:
       LISTEN: /beszel_socket/beszel.sock
+      FILESYSTEM: "dm-0"
       HUB_URL: ${HUB_URL}
       TOKEN: ${TOKEN}
       KEY: "${KEY}"
