@@ -22,9 +22,9 @@ The stack is configured to restart automatically, so on a machine restart, it al
 
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
 - `HUB_URL`: the url that will be used to access this server e.g. http://my-server:8090
-- `DISABLE_PASSWORD_AUTH`: set to false if you have an auth server, e.g. [`fusionauth`](../fusionauth/), defaults to true
 - `KEY`: HUB SSH Public Key, needed by the agent - needs to be set after the hub's first run
 - `TOKEN`: Hub Auth Token, needed by the agent - needs to be set after the hub's first run
+- `EXTRA_FILESYSTEMS`: A list of disk mounts and the label to mount them as in the monitoring system, comma separated, in the format "<mount-path>:<label>", example `/mnt/sda2:MEDIA_E,/mnt/sda3:MEDIA_F`
 
 
 ## Running
