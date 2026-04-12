@@ -1,4 +1,4 @@
-.PHONY: run-update-all create-network
+.PHONY: run-update-all create-network clean-disk
 
 SHELL := /bin/sh
 
@@ -25,3 +25,15 @@ run-update-all:
 
 create-network:
 	docker network create home-lab-net || true
+
+clean-disk:
+	@echo "=== Disk before ==="
+	@df -h /
+	sudo apt clean
+	sudo apt autoremove --purge -y
+	sudo journalctl --vacuum-time=7d
+	sudo find /var/log -type f -name "*.gz" -delete
+	sudo find /var/log -type f -name "*.1" -delete
+	docker system prune -f 2>/dev/null || true
+	@echo "=== Disk after ==="
+	@df -h /
