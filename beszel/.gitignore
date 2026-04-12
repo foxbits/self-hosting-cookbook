@@ -1,0 +1,4 @@
+beszel_agent_data
+beszel_data
+beszel_socket
+docker-compose.override.yml

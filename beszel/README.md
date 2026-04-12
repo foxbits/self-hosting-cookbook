@@ -22,9 +22,9 @@ The stack is configured to restart automatically, so on a machine restart, it al
 
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
 - `HUB_URL`: the url that will be used to access this server e.g. http://my-server:8090
-- `DISABLE_PASSWORD_AUTH`: set to false if you have an auth server, e.g. [`fusionauth`](../fusionauth/), defaults to true
 - `KEY`: HUB SSH Public Key, needed by the agent - needs to be set after the hub's first run
 - `TOKEN`: Hub Auth Token, needed by the agent - needs to be set after the hub's first run
+- `EXTRA_FILESYSTEMS`: A list of disk mounts and the label to mount them as in the monitoring system, comma separated, in the format "<mount-path>:<label>", example `/mnt/sda2:MEDIA_E,/mnt/sda3:MEDIA_F`
 
 
 ## Running
@@ -50,9 +50,8 @@ Then use:
    4. Copy the Token field and paste it into the `.env` file -> Token
    5. Click Save
 3. Restart the docker containers with `make update-run` and go back. You will see that now the agent will show as connected
-4. Connect extra disks - by default Beszel only reads the root disk, to add others, add them in the volumes list of `beszel-agent` (hot of the hub!) (example [here](https://beszel.dev/guide/additional-disks#docker-agent)) and then restart the containers
-5. If the system services do not show up, check the troubleshooting [here](https://beszel.dev/guide/systemd#docker-agent).
-6. Enable notifications
+4. If the system services do not show up, check the troubleshooting [here](https://beszel.dev/guide/systemd#docker-agent).
+5. Enable notifications
    1. Go to Settings -> Notifications
    2. If you want to enable email notifications, click on the SMTP Settings. Login again on the new page with the username and password of the Admin, and then go to Settings -> Mail Settings and setup your SMTP server (e.g. use a mail server you use).
    3. For other channel notifications, see [this page](https://beszel.dev/guide/notifications/). For example, for Discord, have a private Server (or Create one), create a dedicated channel for server updates (e.g. #server-updates), then go to Channel Settings -> Integrations and create a new Webhook with a nice bot name. Copy the Webhook URL and extract from it the `token` and `webhookid` and then add them to the notifications list in the format `discord://token@webhookid` and Save.

@@ -23,10 +23,6 @@ services:
       - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
       # Root disk host
       - /.beszel:/extra-filesystems/dm-0:ro
-      # Additional disks
-      # - /mnt/sda2/.beszel:/extra-filesystems/sdc2__MEDIA_E:ro
-      # - /mnt/sda3/.beszel:/extra-filesystems/sdc2__MEDIA_F:ro
-      # - /mnt/sda4/.beszel:/extra-filesystems/sdc4__EsEsDee:ro
     security_opt:
       - apparmor:unconfined
     environment:
