@@ -109,7 +109,7 @@ engines:
   - name: google news
     engine: google_news
     shortcut: gn
-    categories: [news]
+    categories: [news, finance]
     weight: 2
 
   - name: bing news
@@ -121,7 +121,7 @@ engines:
   - name: brave news
     engine: brave
     shortcut: brn
-    categories: [news]
+    categories: [news, finance]
     brave_category: news
     weight: 2
 
@@ -198,22 +198,14 @@ engines:
     categories: [social]
     weight: 1
 
-  # ---------- FINANCE (via general search limited to finance domains) ----------
-  # SearXNG does not have a dedicated financial domain
-  - name: duckduckgo finance
-    engine: duckduckgo
-    shortcut: ddgf
-    categories: [finance]
-    weight: 1
-    disabled: true
-
+  # ---------- FINANCE a few specifics + defaults to general search ----------
   - name: reuters
     engine: reuters
     shortcut: reu
     categories: [finance, news]
     weight: 3
 
-  # Brave already included in the news section
+  # Brave and Google News already included in the news section
 
   - name: currency converter
     engine: currency_convert
@@ -228,6 +220,13 @@ engines:
     api_key: "$WOLFRAM_API_KEY"
     disabled: $WOLFRAM_DISABLED
     weight: 2
+
+  - name: duckduckgo finance
+    engine: duckduckgo
+    shortcut: ddgf
+    categories: [finance]
+    weight: 1
+    disabled: true
 
   # ---------- CODE ----------
   - name: github
