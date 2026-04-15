@@ -17,7 +17,7 @@ The setup starts the following services:
 - [The Fusion Auth Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9701` - can be accessed in browser at [http://localhost:9701](http://localhost:9701) but it does not work well without an HTTPS reverse proxy on top of it
 - [Open Search Server](https://docs.opensearch.org/latest/about/) at port `9702` - needed by Fusion Auth to work properly
 
-This stack depends on a postgres database and by default is configured to use a [`postgres`](../postgres/) instance already running on the same docker network (`home-lab-net`).
+This stack depends on a SQL database (PostgreSQL) and by default is configured to use a [`datastore-sql`](../datastore-sql/) instance already running on the same docker network (`home-lab-net`).
 
 The stack is configured to restart automatically, so on a machine restart, it always starts back automatically (assuming docker service also always starts automatically).
 

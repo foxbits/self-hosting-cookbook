@@ -1,4 +1,4 @@
-This is the docker compose setup for an [PostgreSQL](https://www.postgresql.org/docs/) database server.
+This is the docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically.
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -28,7 +28,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ### Pre-requisites
 
-The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../)
+The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 
 ### Starting the stack
 
@@ -41,7 +41,7 @@ Then use:
 - `make run` - to just run the system (basic docker compose up command)
 - `make run-update` - to first update the stack (pull), and then run it (run)
 
-Other systems can be connected directly to the database server from the host, or through the `postgres` name if they run on the same docker network (`home-lab-net`), at port `5432`.
+Other systems can be connected directly to the database server from the host, or through the `datastore-sql` name if they run on the same docker network (`home-lab-net`), at port `5432`.
 
 ### Back-up
 

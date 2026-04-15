@@ -8,7 +8,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 5. [`fusionauth`](fusionauth) - docker compose setup for an [FusionAuth](https://fusionauth.io/docs/get-started/download-and-install/docker) (community edition), a fully integrated authentication and authorization server
 6. [`jenkins`](jenkins) - docker compose setup for a simple jenkins stack with a controller and an agent that runs the jobs (CI/CD). This is build based on the documentation available at [jenkins](https://github.com/jenkinsci/docker/blob/master/README.md). The agent is custom made - it is given access to docker on the host machine (DooS - to run builds in containers and be able to deploy) and can run `make` commands
 7. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
-8. [`postgres`](postgres) - docker compose setup for an [PostgreSQL](https://www.postgresql.org/docs/) database server
+8. [`datastore-sql`](datastore-sql) - docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically
 9. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
 10. [`scrobblex`](scrobblex) - docker compose setup for a simple [scrobblex](https://github.com/ryck/scrobblex) agent that can be connected to Plex and used to scrobble Plex plays live into trakt.tv.
 
