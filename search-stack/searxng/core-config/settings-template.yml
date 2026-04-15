@@ -70,6 +70,8 @@ search:
 #    science    → academic search
 #    social     → social media monitoring
 #    finance    → financial data (via DuckDuckGo/Brave)
+#    code       → code search (GitHub, StackOverflow)
+#    it         → general IT search (StackExchange sites, GitHub)
 # ============================================================
 engines:
 
@@ -113,9 +115,10 @@ engines:
     weight: 1
 
   - name: brave news
-    engine: brave_news
+    engine: brave
     shortcut: brn
-    categories: [finance, news]
+    categories: [news]
+    brave_category: news
     weight: 2
 
   - name: hackernews
@@ -210,7 +213,7 @@ engines:
 
   - name: currency converter
     engine: currency_convert
-    shortcut: cc
+    shortcut: curr
     categories: [finance]
     weight: 2
 
@@ -229,11 +232,32 @@ engines:
     categories: [code, it]
     weight: 2
 
-  - name: stackoverflow
-    engine: stackoverflow
+  - name: stack overflow
+    engine: stack_exchange
     shortcut: so
     categories: [code, it]
+    api_site: stackoverflow
     weight: 2
+
+  # BONUS — other it sites
+  - name: super user
+    engine: stack_exchange
+    shortcut: su
+    categories: [it]
+    api_site: superuser
+
+  - name: server fault
+    engine: stack_exchange
+    shortcut: sf
+    categories: [it]
+    api_site: serverfault
+
+  # Disable torch (needs pytorch)
+  - name: torch
+    engine: torch
+    disabled: true
+
+
 
 # ============================================================
 #  OUTGOING — HTTP client settings

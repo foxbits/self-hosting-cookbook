@@ -58,16 +58,21 @@ SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or 
 |----------|-----------|--------|
 | `GET /search?q=QUERY&format=json` | Search | JSON |
 | `GET /search?q=QUERY&format=json&categories=news` | News | JSON |
-| `GET /search?q=QUERY&format=json&categories=science` | Academic | JSON |
 | `GET /search?q=QUERY&format=rss&categories=news` | News RSS feed | RSS/XML |
+| `GET /search?q=QUERY&format=json&categories=social` | Social | JSON |
+| `GET /search?q=QUERY&format=json&categories=science` | Academic | JSON |
+| `GET /search?q=QUERY&format=json&categories=finance` | Finance | JSON |
+| `GET /search?q=QUERY&format=json&categories=code` | Code | JSON |
+| `GET /search?q=QUERY&format=json&categories=it` | IT | JSON |
 
 #### Categories available
 
-- `general` — web search
+- `general` — web search (Google, Brave, Duck Duck Go, optionally Bing)
 - `news` — News (Google News, Brave News, Bing News)
 - `science` — academic (Google Scholar, Semantic Scholar, arXiv, PubMed)
-- `social` — social media (Reddit, Mastodon)
-- `code` — source code (GitHub, StackOverflow)
+- `social` — social media (Reddit, Mastodon, Lemmy, Tootfinder)
+- `financial` - Reuters, Brave News (Finance), Duck Duck Go Finance News, Currency Converter, Wolfram Alpha (Optional)
+- `code` & `it` — source code (GitHub, StackOverflow), forums (StackExchange, SuperUser)
 
 
 ### Back-up
