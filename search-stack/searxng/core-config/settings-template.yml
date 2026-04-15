@@ -19,7 +19,7 @@ general:
 
 server:
   secret_key: ""                        # Automatically set from env -> SEARXNG_SECRET_KEY, leave empty
-  limiter: true                         # Rate limiting via Valkey
+  limiter: false
   image_proxy: true
   http_protocol_version: "1.1"
   method: "GET"
