@@ -86,7 +86,7 @@ engines:
     categories: [general, web]
     weight: 2
 
-  - name: brave search
+  - name: brave
     engine: brave
     shortcut: br
     categories: [general, web]
