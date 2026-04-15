@@ -1,0 +1,4 @@
+searxng/*
+!searxng/core-config/
+searxng/core-config/*
+!searxng/core-config/settings-template.yml
