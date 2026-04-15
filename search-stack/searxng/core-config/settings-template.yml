@@ -3,7 +3,11 @@
 #  Optimized for AI Use Cases (Hermes Agent, OpenWebUI, GPT-Researcher)
 # ============================================================
 
-use_default_settings: true
+use_default_settings:
+  engines:
+    remove:
+      - torch
+      - ahmia
 
 general:
   debug: false
@@ -219,7 +223,7 @@ engines:
 
   - name: wolfram alpha
     engine: wolframalpha_api
-    shortcut: wa
+    shortcut: wlf
     categories: [finance, science]
     api_key: "$WOLFRAM_API_KEY"
     disabled: $WOLFRAM_DISABLED
@@ -252,10 +256,8 @@ engines:
     categories: [it]
     api_site: serverfault
 
-  # Disable torch (needs pytorch)
-  - name: torch
-    engine: torch
-    disabled: true
+
+
 
 
 
@@ -275,5 +277,5 @@ outgoing:
 # ============================================================
 #  RATE LIMITER — Protecting personal instance, a little more permissive
 # ============================================================
-redis:
+valkey:
   url: redis://datastore-memory:6379/0
