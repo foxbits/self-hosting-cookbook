@@ -7,7 +7,7 @@ use_default_settings: true
 
 general:
   debug: false
-  instance_name: $SEARXNG_INSTANCE_NAME # Env -> SEARXNG_INSTANCE_NAME
+  instance_name: "$SEARXNG_INSTANCE_NAME"
   privacypolicy_url: false
   donation_url: false
   contact_url: false
@@ -29,7 +29,7 @@ server:
 #  UI Settings
 # ============================================================
 ui:
-  default_locale: $SEARXNG_DEFAULT_LOCALE # Env -> SEARXNG_DEFAULT_LOCALE
+  default_locale: "$SEARXNG_DEFAULT_LOCALE"
   query_in_title: false
   infinite_scroll: false
   center_alignment: false
@@ -218,8 +218,8 @@ engines:
     engine: wolframalpha_api
     shortcut: wa
     categories: [finance, science]
-    api_key: $WOLFRAM_API_KEY  # Env -> WOLFRAM_API_KEY
-    disabled: $WOLFRAM_DISABLED # Env -> WOLFRAM_DISABLED
+    api_key: "$WOLFRAM_API_KEY"
+    disabled: $WOLFRAM_DISABLED
     weight: 2
 
   # ---------- CODE ----------
