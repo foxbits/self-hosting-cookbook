@@ -258,7 +258,7 @@ engines:
 
   - name: stack overflow
     engine: stackexchange
-    shortcut: so
+    shortcut: seso
     categories: [code, it]
     api_site: stackoverflow
     weight: 2
@@ -266,13 +266,13 @@ engines:
   # BONUS — other it sites
   - name: super user
     engine: stackexchange
-    shortcut: su
+    shortcut: sesu
     categories: [it]
     api_site: superuser
 
   - name: server fault
     engine: stackexchange
-    shortcut: sf
+    shortcut: sesf
     categories: [it]
     api_site: serverfault
 
