@@ -118,9 +118,12 @@ engines:
     shortcut: gnr
     categories: [news, finance]
     url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
-    url_xpath: //item/link
-    title_xpath: //item/title
-    content_xpath: //item/description
+    results_xpath: //item
+    url_xpath: link
+    title_xpath: title
+    content_xpath: description
+    thumbnail_xpath: .//media:content/@url
+    publishedDate_xpath: pubDate
     timeout: 10.0
     weight: 3
 
