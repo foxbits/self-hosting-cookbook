@@ -1,0 +1,37 @@
+services:
+  datastore-memory:
+    image: valkey/valkey:9-alpine
+    container_name: datastore-memory
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - home-lab-net
+    volumes:
+      - valkey-data:/data
+    command: >
+      valkey-server
+      --save 30 1
+      --loglevel warning
+      --maxmemory ${MAX_MEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  valkey-data:
+    driver: local
+
+networks:
+  home-lab-net:
+    external: true
