@@ -9,13 +9,11 @@ services:
       - home-lab-net
     volumes:
       - valkey-data:/data
-    environment:
-      - MAX_MEMORY=${MAX_MEMORY:-256mb}
     command: >
       valkey-server
       --save 30 1
       --loglevel warning
-      --maxmemory $${MAX_MEMORY}
+      --maxmemory ${MAX_MEMORY:-256mb}
       --maxmemory-policy allkeys-lru
     cap_drop:
       - ALL
