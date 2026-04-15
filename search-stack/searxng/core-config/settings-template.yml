@@ -33,7 +33,7 @@ server:
 #  UI Settings
 # ============================================================
 ui:
-  default_locale: "$SEARXNG_DEFAULT_LOCALE"
+  default_locale: "$LOCALE"
   query_in_title: false
   infinite_scroll: false
   center_alignment: false
@@ -86,10 +86,11 @@ engines:
     categories: [general, web]
     weight: 2
 
-  - name: brave
+  - name: brave search
     engine: brave
     shortcut: br
     categories: [general, web]
+    brave_category: search
     weight: 2
 
   - name: duckduckgo
@@ -110,6 +111,24 @@ engines:
     engine: google_news
     shortcut: gn
     categories: [news, finance]
+    weight: 2
+  
+  - name: google news rss
+    engine: xpath
+    shortcut: gnr
+    categories: [news, finance]
+    url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
+    url_xpath: //item/link
+    title_xpath: //item/title
+    content_xpath: //item/description
+    timeout: 10.0
+    weight: 3
+
+  - name: qwant news
+    engine: qwant
+    shortcut: qn
+    categories: [news, finance]
+    qwant_category: news
     weight: 2
 
   - name: bing news
@@ -226,7 +245,6 @@ engines:
     shortcut: ddgf
     categories: [finance]
     weight: 1
-    disabled: true
 
   # ---------- CODE ----------
   - name: github

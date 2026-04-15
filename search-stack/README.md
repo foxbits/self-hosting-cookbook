@@ -21,12 +21,15 @@ This stack depends on an In-Memory Database (Valkey) and by default is configure
 
 The stack is configured to restart automatically, so on a machine restart, it always starts back automatically (assuming docker service also always starts automatically).
 
+The stack assumes that you will use it for personal use, therefore it disables the rate limiter.
+
 ### Environment variables
 
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
 - `SEARXNG_INSTANCE_NAME`: The instance name that will be displayed in the SearXNG UI, if used
 - `SEARXNG_BASE_URL`: the URL you will be accessing the SearXNG instance from a browser, it is usually either `http://localhost:9704` or `http://my-local-server-address:9704`. Service-to-service communication is not affected by this URL. It is not advisable to expose your instance publicly (or at least protect it with a reverse proxy with authentication)
-- `SEARXNG_DEFAULT_LOCALE`: the language ISO code used by default in the SearXNG UI
+- `LOCALE`: the language ISO code used by default in the SearXNG UI and results (e.g. `en`)
+- `COUNTRY_CODE`: the country ISO code used by default by SearXNG results (e.g. `US`)
 - `SEARXNG_SECRET_KEY`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
 
