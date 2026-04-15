@@ -1,0 +1,72 @@
+This is the docker compose setup for [SearXNG](https://github.com/searxng/searxng), the Internet metasearch engine which aggregates results from various search services and databases.
+
+A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
+
+- [Understanding the setup](#understanding-the-setup)
+  - [Environment variables](#environment-variables)
+- [Running](#running)
+  - [Pre-requisites](#pre-requisites)
+  - [Starting the stack](#starting-the-stack)
+    - [API Endpoints](#api-endpoints)
+    - [Categories available](#categories-available)
+  - [Back-up](#back-up)
+
+
+## Understanding the setup
+
+The setup starts the following services:
+- [The SearXNG Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9704`
+
+This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
+
+The stack is configured to restart automatically, so on a machine restart, it always starts back automatically (assuming docker service also always starts automatically).
+
+### Environment variables
+
+The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
+- `SEARXNG_BASE_URL`: the URL you will be accessing the SearXNG instance from a browser, it is usually either `http://localhost:9704` or `http://my-local-server-address:9704`. Service-to-service communication is not affected by this URL. It is not advisable to expose your instance publicly (or at least protect it with a reverse proxy with authentication)
+- `SEARXNG_SECRET_KEY`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
+
+
+## Running
+
+### Pre-requisites
+
+The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
+
+This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
+
+### Starting the stack
+
+You will have to have `docker` and `docker compose` installed on the host machine.
+
+Make sure that you setup the environment variables correctly.
+
+Then use:
+- `make build` - to update the stack images to latest version
+- `make run` - to just run the system (basic docker compose up command)
+- `make run-update` - to first update the stack (pull), and then run it (run)
+
+SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`).
+
+#### API Endpoints
+
+| Endpoint | Description | Format |
+|----------|-----------|--------|
+| `GET /search?q=QUERY&format=json` | Search | JSON |
+| `GET /search?q=QUERY&format=json&categories=news` | News | JSON |
+| `GET /search?q=QUERY&format=json&categories=science` | Academic | JSON |
+| `GET /search?q=QUERY&format=rss&categories=news` | News RSS feed | RSS/XML |
+
+#### Categories available
+
+- `general` — web search
+- `news` — News (Google News, Brave News, Bing News)
+- `science` — academic (Google Scholar, Semantic Scholar, arXiv, PubMed)
+- `social` — social media (Reddit, Mastodon)
+- `code` — source code (GitHub, StackOverflow)
+
+
+### Back-up
+
+The configuration and data will be stored in these docker volumes: [`searxng-data`] and in these directories: [`./searxng/core-config`] - so this is what you have to back-up.

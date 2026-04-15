@@ -1,0 +1,39 @@
+services:
+  searxng:
+    image: ghcr.io/searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    networks:
+      - home-lab-net
+    ports:
+      - "9704:8080"
+    volumes:
+      - ./searxng/core-config:/etc/searxng:rw
+      - searxng-data:/var/cache/searxng
+    environment:
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://searxng:8080/}
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
+      - SEARXNG_REDIS_URL=redis://datastore-memory:6379/0
+      - FORCE_OWNERSHIP=true
+    env_file:
+      - .env
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  searxng-data:
+    driver: local
+
+networks:
+  home-lab-net:
+    external: true
