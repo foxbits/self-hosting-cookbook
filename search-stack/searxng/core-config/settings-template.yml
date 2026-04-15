@@ -117,8 +117,8 @@ engines:
     engine: xpath
     shortcut: gnr
     categories: [news, finance]
-    url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
-    results_xpath: //item
+    search_url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
+    results_xpath: //channel//item
     url_xpath: link
     title_xpath: title
     content_xpath: description
@@ -257,7 +257,7 @@ engines:
     weight: 2
 
   - name: stack overflow
-    engine: stack_exchange
+    engine: stackexchange
     shortcut: so
     categories: [code, it]
     api_site: stackoverflow
@@ -265,13 +265,13 @@ engines:
 
   # BONUS — other it sites
   - name: super user
-    engine: stack_exchange
+    engine: stackexchange
     shortcut: su
     categories: [it]
     api_site: superuser
 
   - name: server fault
-    engine: stack_exchange
+    engine: stackexchange
     shortcut: sf
     categories: [it]
     api_site: serverfault
