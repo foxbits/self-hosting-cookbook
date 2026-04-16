@@ -9,18 +9,18 @@ generate-settings:
 	@if [ -f $(SETTINGS) ]; then \
 		echo "$(SETTINGS) already exists, skipping generation"; \
 		exit 0; \
-	fi
-	@if [ ! -f $(ENV_FILE) ]; then \
+	fi; \
+	if [ ! -f $(ENV_FILE) ]; then \
 		echo "Error: $(ENV_FILE) not found. Copy .env.default to .env and configure it."; \
 		exit 1; \
-	fi
-	@mkdir -p $(SEARXNG_DIR)
-	@if [ -d "$(SEARXNG_DIR)" ]; then sudo chown -R $$USER:$(id -gn) $(SEARXNG_DIR); fi
-	@set -a; \
+	fi; \
+	mkdir -p $(SEARXNG_DIR); \
+	if [ -d "$(SEARXNG_DIR)" ]; then sudo chown -R $$USER:$(id -gn) $(SEARXNG_DIR); fi; \
+	set -a; \
 	. ./$(ENV_FILE); \
 	set +a; \
-	envsubst '$$DEBUG $$LIMITER_ENABLED $$SEARXNG_INSTANCE_NAME $$LOCALE $$COUNTRY_CODE $$WOLFRAM_API_KEY $$WOLFRAM_DISABLED' < $(TEMPLATE) > $(SETTINGS)
-	@echo "Generated $(SETTINGS) from template"
+	envsubst '$$DEBUG $$LIMITER_ENABLED $$SEARXNG_INSTANCE_NAME $$LOCALE $$COUNTRY_CODE $$WOLFRAM_API_KEY $$WOLFRAM_DISABLED' < $(TEMPLATE) > $(SETTINGS); \
+	echo "Generated $(SETTINGS) from template"
 
 pull:
 	docker compose pull
