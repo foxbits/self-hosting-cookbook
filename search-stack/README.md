@@ -1,4 +1,4 @@
-This is the docker compose setup for [SearXNG](https://github.com/searxng/searxng), the Internet metasearch engine which aggregates results from various search services and databases.
+This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng), the Internet metasearch engine.
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
