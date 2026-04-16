@@ -119,11 +119,10 @@ engines:
     categories: [news, finance]
     search_url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
     results_xpath: //channel//item
-    url_xpath: link
-    title_xpath: title
-    content_xpath: description
-    thumbnail_xpath: .//media:content/@url
-    publishedDate_xpath: pubDate
+    url_xpath: link/text()
+    title_xpath: title/text()
+    content_xpath: description/text()
+    publishedDate_xpath: pubDate/text()
     timeout: 10.0
     weight: 3
 
