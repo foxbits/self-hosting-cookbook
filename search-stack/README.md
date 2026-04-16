@@ -21,11 +21,11 @@ This stack depends on an In-Memory Database (Valkey) and by default is configure
 
 The stack is configured to restart automatically, so on a machine restart, it always starts back automatically (assuming docker service also always starts automatically).
 
-The stack assumes that you will use it for personal use, therefore it disables the rate limiter.
-
 ### Environment variables
 
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
+- `DEBUG`: searxng will log all the logs debug level if this is enabled, useful for troubleshooting
+- `LIMITER_ENABLED`: The stack assumes that you will use it for personal use, therefore it disables the rate limiter. But you can enable it with this env var.
 - `SEARXNG_INSTANCE_NAME`: The instance name that will be displayed in the SearXNG UI, if used
 - `SEARXNG_BASE_URL`: the URL you will be accessing the SearXNG instance from a browser, it is usually either `http://localhost:9704` or `http://my-local-server-address:9704`. Service-to-service communication is not affected by this URL. It is not advisable to expose your instance publicly (or at least protect it with a reverse proxy with authentication)
 - `LOCALE`: the language ISO code used by default in the SearXNG UI and results (e.g. `en`)

@@ -10,7 +10,7 @@ use_default_settings:
       - ahmia
 
 general:
-  debug: false
+  debug: $DEBUG
   instance_name: "$SEARXNG_INSTANCE_NAME"
   privacypolicy_url: false
   donation_url: false
@@ -19,7 +19,7 @@ general:
 
 server:
   secret_key: ""                        # Automatically set from env -> SEARXNG_SECRET_KEY, leave empty
-  limiter: false
+  limiter: $LIMITER_ENABLED
   image_proxy: true
   http_protocol_version: "1.1"
   method: "GET"
@@ -274,11 +274,6 @@ engines:
     categories: [it]
     api_site: serverfault
 
-
-
-
-
-
 # ============================================================
 #  OUTGOING — HTTP client settings
 # ============================================================
@@ -293,7 +288,7 @@ outgoing:
   using_tor_proxy: false
 
 # ============================================================
-#  RATE LIMITER — Protecting personal instance, a little more permissive
+#  Redis / Valkey instance for caching / rate limiting etc.
 # ============================================================
 valkey:
   url: redis://datastore-memory:6379/0

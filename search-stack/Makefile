@@ -13,7 +13,7 @@ generate-settings:
 	@set -a; \
 	. ./$(ENV_FILE); \
 	set +a; \
-	envsubst '$$SEARXNG_INSTANCE_NAME $$LOCALE $$COUNTRY_CODE $$WOLFRAM_API_KEY $$WOLFRAM_DISABLED' < $(TEMPLATE) > $(SETTINGS)
+	envsubst '$$DEBUG $$LIMITER_ENABLED $$SEARXNG_INSTANCE_NAME $$LOCALE $$COUNTRY_CODE $$WOLFRAM_API_KEY $$WOLFRAM_DISABLED' < $(TEMPLATE) > $(SETTINGS)
 	@echo "Generated $(SETTINGS) from template"
 
 pull:
