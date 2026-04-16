@@ -15,7 +15,6 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 
 The setup starts the following services:
 - [The Fusion Auth Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9701` - can be accessed in browser at [http://localhost:9701](http://localhost:9701) but it does not work well without an HTTPS reverse proxy on top of it
-- [Open Search Server](https://docs.opensearch.org/latest/about/) at port `9702` - needed by Fusion Auth to work properly
 
 This stack depends on a SQL database (PostgreSQL) and by default is configured to use a [`datastore-sql`](../datastore-sql/) instance already running on the same docker network (`home-lab-net`).
 
@@ -33,6 +32,8 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 ### Pre-requisites
 
 The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
+
+This stack depends on a SQL database (PostgreSQL) and by default is configured to use a [`datastore-sql`](../datastore-sql/) instance already running on the same docker network (`home-lab-net`).
 
 The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared).
 
@@ -85,4 +86,4 @@ You will need to configure your HTTPS reverse proxy on top of it and then access
 
 ### Back-up
 
-The configuration and data will be stored in these docker volumes: fusionauth_config, search_data - so this is what you have to back-up.
+The configuration and data will be stored in these docker volumes: fusionauth_config - so this is what you have to back-up.
