@@ -96,7 +96,7 @@ engines:
   - name: duckduckgo
     engine: duckduckgo
     shortcut: ddg
-    categories: [general, web]
+    categories: [general, web, finance, news]
     weight: 1
 
   - name: bing
@@ -124,7 +124,7 @@ engines:
     content_xpath: description/text()
     soft_max_redirects: 10
     timeout: 10.0
-    weight: 3
+    weight: 2
 
   - name: qwant news
     engine: qwant
@@ -224,7 +224,7 @@ engines:
     engine: reuters
     shortcut: reu
     categories: [finance, news]
-    weight: 3
+    weight: 2
 
   # Brave and Google News already included in the news section
 
@@ -241,12 +241,6 @@ engines:
     api_key: "$WOLFRAM_API_KEY"
     disabled: $WOLFRAM_DISABLED
     weight: 2
-
-  - name: duckduckgo finance
-    engine: duckduckgo
-    shortcut: ddgf
-    categories: [finance]
-    weight: 1
 
   # ---------- CODE ----------
   - name: github
