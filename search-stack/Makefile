@@ -10,6 +10,7 @@ generate-settings:
 		echo "Error: $(ENV_FILE) not found. Copy .env.default to .env and configure it."; \
 		exit 1; \
 	fi
+	@mkdir -p $(SEARXNG_DIR)
 	@set -a; \
 	. ./$(ENV_FILE); \
 	set +a; \
