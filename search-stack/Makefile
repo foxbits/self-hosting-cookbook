@@ -1,7 +1,7 @@
 .PHONY: pull run run-update update-run generate-settings
 
 SEARXNG_DIR := searxng/core-config
-TEMPLATE := $(SEARXNG_DIR)/settings-template.yml
+TEMPLATE := ./settings-template.yml
 SETTINGS := $(SEARXNG_DIR)/settings.yml
 ENV_FILE := .env
 
