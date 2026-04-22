@@ -1,4 +1,4 @@
-This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng), the Internet metasearch engine.
+This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng), the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/)
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -7,8 +7,10 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 - [Running](#running)
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
-    - [API Endpoints](#api-endpoints)
-    - [Categories available](#categories-available)
+    - [API Endpoints for SearXNG](#api-endpoints-for-searxng)
+    - [Categories available for SearXNG](#categories-available-for-searxng)
+  - [MCP Server for Crawl4AI](#mcp-server-for-crawl4ai)
+    - [API Endpoints for Crawl4AI](#api-endpoints-for-crawl4ai)
   - [Back-up](#back-up)
 
 
@@ -16,6 +18,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 
 The setup starts the following services:
 - [The SearXNG Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9704`
+- [crawl4ai](https://docs.crawl4ai.com/) at port `9705`
 
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
 
@@ -32,6 +35,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `COUNTRY_CODE`: the country ISO code used by default by SearXNG results (e.g. `US`)
 - `SEARXNG_SECRET_KEY`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
+- `MAX_CONCURRENT_TASKS`: Depends on the allowed number of concurrent tasks for a crawl, number must be considered with the formula agent count x parallel tasks x 150MB depending on the RAM you allocate and the number of agents you plan to use. Default is 10.
 
 
 ## Running
@@ -55,9 +59,11 @@ Then use:
 - `make run` - to just run the system (basic docker compose up command)
 - `make run-update` - to first update the stack (pull), and then run it (run)
 
-SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`).
+SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`), or with [http://searxng:8080](http://searxng:8080) in `home-lab-net`
 
-#### API Endpoints
+Crawl4AI will be available at [http://localhost:9705](http://localhost:9705), or with [http://crawl4ai:11235](http://crawl4ai:11235) in `home-lab-net`
+
+#### API Endpoints for SearXNG
 
 | Endpoint | Description | Format |
 |----------|-----------|--------|
@@ -70,7 +76,7 @@ SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or 
 | `GET /search?q=QUERY&format=json&categories=code` | Code | JSON |
 | `GET /search?q=QUERY&format=json&categories=it` | IT | JSON |
 
-#### Categories available
+#### Categories available for SearXNG
 
 - `general` — web search (Google, Brave, Duck Duck Go, optionally Bing)
 - `news` — News (Google News, Brave News, Bing News)
@@ -78,6 +84,29 @@ SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or 
 - `social` — social media (Reddit, Mastodon, Lemmy, Tootfinder)
 - `financial` - Reuters, Brave News (Finance), Duck Duck Go Finance News, Currency Converter, Wolfram Alpha (Optional)
 - `code` & `it` — source code (GitHub, StackOverflow), forums (StackExchange, SuperUser)
+
+### MCP Server for Crawl4AI
+
+The Crawl4AI server exposes two MCP endpoints:
+- Server-Sent Events (SSE): http://localhost:11235/mcp/sse
+- WebSocket: ws://localhost:11235/mcp/ws
+
+Example to add the SSE endpoint as MCP server:
+`mcp add --transport sse c4ai-sse http://localhost:9705/mcp/sse`
+
+#### API Endpoints for Crawl4AI
+
+For full details see [their official documentation](https://docs.crawl4ai.com/core/self-hosting/#mcp-model-context-protocol-support).
+
+| Endpoint | Description | Format |
+|----------|-----------|--------|
+| `GET /playground` | Playground website to test, use in browser | Application |
+| `POST /crawl` | The default crawl endpoint | Markdown |
+| `POST /crawl/stream` | The crawl endpoint with stream support | Markdown |
+| `POST /html` { url: "" } | Crawls the content as HTML | HTML |
+| `POST /screenshot` { url: "" } | Crawls the content as HTML | HTML |
+| `POST /pdf` { url: "" } | Crawls the content as PDF | PDF |
+| `POST /execute_js` { url: "", scripts: [""] } | Execute JS on the page | Markdown |
 
 
 ### Back-up
