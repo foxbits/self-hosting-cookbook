@@ -101,12 +101,22 @@ For full details see [their official documentation](https://docs.crawl4ai.com/co
 | Endpoint | Description | Format |
 |----------|-----------|--------|
 | `GET /playground` | Playground website to test, use in browser | Application |
-| `POST /crawl` | The default crawl endpoint | Markdown |
-| `POST /crawl/stream` | The crawl endpoint with stream support | Markdown |
+| `POST /crawl { urls: [] }` | The default crawl endpoint, crawls media, html and markdown | Markdown |
+| `POST /md { url: [] }` | The default crawl endpoint, crawls media, html and markdown | Markdown |
 | `POST /html` { url: "" } | Crawls the content as HTML | HTML |
 | `POST /screenshot` { url: "" } | Crawls the content as HTML | HTML |
 | `POST /pdf` { url: "" } | Crawls the content as PDF | PDF |
 | `POST /execute_js` { url: "", scripts: [""] } | Execute JS on the page | Markdown |
+
+For dynamic websites, add in the request body:
+```
+"crawler_config": {
+    "wait_until": "networkidle"
+  }
+```
+
+For the `/md` request, use `"f": "raw"` in the body to get the unfit markdown (sometimes the fitting process strips wrong parts of websites, even important ones). 
+For the `/crawl` request, you can let the agent use the `raw_markdown` content, which is the unfit one and contains also links to media (separately, media is also in the `media` object).
 
 
 ### Back-up
