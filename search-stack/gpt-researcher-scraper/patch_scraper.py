@@ -41,33 +41,32 @@ def patch_scraper():
 
     # Add import for Crawl4AI
     if "crawl4ai" not in content:
-        # Find the from . import line and add Crawl4AI
-        import_section = """from . import (
-    ArxivScraper,
-    BeautifulSoupScraper,
-    BrowserScraper,
-    FireCrawl,
-    NoDriverScraper,
-    PyMuPDFScraper,
-    TavilyExtract,
-    WebBaseLoaderScraper,
-)"""
-        new_import_section = """from . import (
-    ArxivScraper,
-    BeautifulSoupScraper,
-    BrowserScraper,
-    Crawl4AI,
-    FireCrawl,
-    NoDriverScraper,
-    PyMuPDFScraper,
-    TavilyExtract,
-    WebBaseLoaderScraper,
-)"""
-        if import_section in content:
-            content = content.replace(import_section, new_import_section)
-            print("Added Crawl4AI to imports")
+        import re
+
+        # Match "from . import (" block and add Crawl4AI before the closing parenthesis
+        # This regex matches: from . import ( ... ) capturing the content inside
+        pattern = r'(from \. import \([^)]*?)(\s*\))'
+
+        def add_crawl4ai_import(match):
+            existing = match.group(1)
+            closing = match.group(2)
+            # Check if there's already a trailing comma
+            if existing.rstrip().endswith(','):
+                return existing + '\n    Crawl4AI,' + closing
+            else:
+                # Add comma to last item if needed, then add Crawl4AI
+                stripped = existing.rstrip()
+                if stripped and not stripped.endswith(','):
+                    existing = stripped + ',\n'
+                return existing + '    Crawl4AI,' + closing
+
+        new_content = re.sub(pattern, add_crawl4ai_import, content, flags=re.DOTALL)
+
+        if new_content != content:
+            content = new_content
+            print("Added Crawl4AI to imports using regex")
         else:
-            print("WARNING: Could not find import section to patch")
+            print("WARNING: Could not find import section to patch with regex")
     else:
         print("Crawl4AI already imported")
 
