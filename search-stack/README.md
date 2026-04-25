@@ -4,6 +4,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 
 - [Understanding the setup](#understanding-the-setup)
   - [Environment variables](#environment-variables)
+  - [GPT-Researcher Settings](#gpt-researcher-settings)
 - [Running](#running)
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
@@ -14,6 +15,8 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
   - [GPT Researcher Backend](#gpt-researcher-backend)
     - [API Endpoints for GPT Researcher](#api-endpoints-for-gpt-researcher)
     - [MCP Server for GPT Researcher](#mcp-server-for-gpt-researcher)
+    - [Image Generation](#image-generation)
+    - [Scraper Configuration](#scraper-configuration)
   - [Back-up](#back-up)
 
 
@@ -48,11 +51,12 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
-- `GOOGLE_API_KEY`: Google API key for image generation (required if `IMAGE_GENERATION_ENABLED=true`)
-- `IMAGE_GENERATION_MODEL`: Gemini model for image generation (default: `models/gemini-2.0-flash-preview-image-generation`)
+- `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
+- `GOOGLE_API_KEY`: Google API key for image generation (required if `IMAGE_GENERATION_PROVIDER=google`)
+- `IMAGE_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
+- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1/images/generations`)
+- `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
 - `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
-
-**Note**: Image generation uses Google's Gemini API only. There is no support for custom API URLs.
 
 
 ## Running
@@ -174,12 +178,19 @@ The MCP server provides:
 
 #### Image Generation
 
-Image generation is optional and uses Google's Gemini API. To enable:
+Image generation is optional and can use either Google Gemini API or an OpenAI-compatible API.
 
-1. Set `IMAGE_GENERATION_ENABLED=true`
-2. Provide `GOOGLE_API_KEY`
+**Google Gemini API:**
+1. Set `IMAGE_GENERATION_PROVIDER=google`
+2. Set `IMAGE_GENERATION_ENABLED=true`
+3. Provide `GOOGLE_API_KEY`
 
-**Limitation**: Image generation only works with Google's official API (`GOOGLE_API_KEY`). There is no support for custom API URLs (e.g., nano-banana models).
+**OpenAI-compatible API (e.g., nano-gpt.com) (default):**
+1. Set `IMAGE_GENERATION_PROVIDER=openai`
+2. Set `IMAGE_GENERATION_ENABLED=true`
+3. Provide `IMAGE_API_KEY` (or `OPENAI_API_KEY` as fallback)
+4. Provide `IMAGE_GENERATION_BASE_URL` (e.g., `https://nano-gpt.com/api/v1/images/generations`)
+5. Set `IMAGE_GENERATION_MODEL` to a model supported by your provider (e.g., `dall-e-3`)
 
 #### Scraper Configuration
 
