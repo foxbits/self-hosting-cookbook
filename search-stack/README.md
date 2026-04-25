@@ -53,7 +53,8 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 - `FAST_LLM`: Model used for fast operations (default: `moonshotai/kimi-k2.5`)
 - `SMART_LLM`: Model used for comprehensive research (default: `minimax/minimax-m2.7`)
 - `EMBEDDING`: Embedding model for text vectorization (default: `BAAI/bge-m3`)
-- `BROWSE_CHUNK_MAX_LENGTH`: Maximum chunk length for web content (default: `4000`)
+- `BROWSE_CHUNK_MAX_LENGTH`: Maximum chunk length (characters) for web content (default: `4000`)
+- `OPENAI_EMBEDDING_CHUNK_SIZE`: Maximum number of batches of chunks to use for lang-chain (based on CHUNK_MAX_LENGTH => 4000 / 4 = 1000) and the max number of tokens supported by the embeddings model (e.g. ~80000) => default 8
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
