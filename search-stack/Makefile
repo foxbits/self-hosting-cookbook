@@ -22,8 +22,9 @@ generate-settings:
 	envsubst '$$DEBUG $$LIMITER_ENABLED $$SEARXNG_INSTANCE_NAME $$LOCALE $$COUNTRY_CODE $$WOLFRAM_API_KEY $$WOLFRAM_DISABLED' < $(TEMPLATE) > $(SETTINGS); \
 	echo "Generated $(SETTINGS) from template"
 
-pull:
+build:
 	docker compose pull
+	docker compose build --no-cache
 
 run:
 	$(MAKE) generate-settings
@@ -31,7 +32,7 @@ run:
 	docker compose up -d
 
 run-update:
-	$(MAKE) pull
+	$(MAKE) build
 	$(MAKE) run
 
 # Alias for run-update
