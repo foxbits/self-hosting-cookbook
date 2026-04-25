@@ -50,9 +50,9 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the LLM API (default: `https://nano-gpt.com/api/v1`)
-- `FAST_LLM`: Model used for fast operations (default: `moonshotai/kimi-k2.5`)
-- `SMART_LLM`: Model used for comprehensive research (default: `minimax/minimax-m2.7`)
-- `EMBEDDING`: Embedding model for text vectorization (default: `BAAI/bge-m3`)
+- `FAST_LLM`: Model used for fast operations (default: `moonshotai/kimi-k2.5`), must be prefixed by the provider, e.g. `openai:`
+- `SMART_LLM`: Model used for comprehensive research (default: `minimax/minimax-m2.7`), must be prefixed by the provider, e.g. `openai:`
+- `EMBEDDING`: Embedding model for text vectorization (default: `BAAI/bge-m3`), must be prefixed by the provider, e.g. `openai:`
 - `BROWSE_CHUNK_MAX_LENGTH`: Maximum chunk length (characters) for web content (default: `4000`)
 - `OPENAI_EMBEDDING_CHUNK_SIZE`: Maximum number of batches of chunks to use for lang-chain (based on CHUNK_MAX_LENGTH => 4000 / 4 = 1000) and the max number of tokens supported by the embeddings model (e.g. ~80000) => default 8
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
