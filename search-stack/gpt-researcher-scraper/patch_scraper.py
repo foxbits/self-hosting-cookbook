@@ -2,12 +2,14 @@
 """
 Patch GPT Researcher's scraper module to register Crawl4AI.
 
-Directly modifies the installed gpt_researcher code at /usr/src/app
-which is where the Docker container places the application code.
+Directly modifies /usr/src/app/gpt_researcher/scraper/:
+1. Copies the crawl4ai scraper module
+2. Patches __init__.py to import Crawl4AI and add to __all__
+3. Patches scraper.py to add 'from .crawl4ai import Crawl4AI' after the existing import block
+4. Adds "crawl4ai": Crawl4AI to SCRAPER_CLASSES dict
 """
 
 import os
-import re
 import shutil
 
 
@@ -16,22 +18,21 @@ def patch_scraper():
     scraper_py = os.path.join(base_path, "scraper.py")
     crawl4ai_src = "/tmp/crawl4ai_scraper"
 
-    print(f"Target scraper directory: {base_path}")
+    print(f"Target: {base_path}")
 
-    # Verify scraper.py exists
     if not os.path.exists(scraper_py):
         print(f"ERROR: {scraper_py} not found")
         return False
 
-    # Copy crawl4ai scraper to target
+    # Copy crawl4ai scraper
     crawl4ai_dest = os.path.join(base_path, "crawl4ai")
     if os.path.isdir(crawl4ai_src):
         if os.path.exists(crawl4ai_dest):
             shutil.rmtree(crawl4ai_dest)
         shutil.copytree(crawl4ai_src, crawl4ai_dest)
-        print(f"✓ Copied Crawl4AI scraper to {crawl4ai_dest}")
+        print(f"✓ Copied crawl4ai scraper")
     else:
-        print(f"WARNING: Crawl4AI source not found at {crawl4ai_src}")
+        print(f"ERROR: Source not found: {crawl4ai_src}")
         return False
 
     # Patch __init__.py
@@ -41,15 +42,15 @@ def patch_scraper():
             init_content = f.read()
 
         if "crawl4ai" not in init_content:
-            # Add import after FireCrawl
+            added = False
             if "from .firecrawl.firecrawl import FireCrawl" in init_content:
                 init_content = init_content.replace(
                     "from .firecrawl.firecrawl import FireCrawl",
                     "from .firecrawl.firecrawl import FireCrawl\nfrom .crawl4ai.crawl4ai import Crawl4AI"
                 )
                 print("✓ Added Crawl4AI import to __init__.py")
+                added = True
 
-            # Add to __all__ after FireCrawl
             if '"FireCrawl",' in init_content:
                 init_content = init_content.replace(
                     '"FireCrawl",',
@@ -57,43 +58,34 @@ def patch_scraper():
                 )
                 print("✓ Added Crawl4AI to __all__ in __init__.py")
 
-            with open(init_py, "w") as f:
-                f.write(init_content)
+            if added:
+                with open(init_py, "w") as f:
+                    f.write(init_content)
+            else:
+                print("WARNING: Could not patch __init__.py (FireCrawl pattern not found)")
         else:
             print("✓ Crawl4AI already in __init__.py")
-    else:
-        print(f"WARNING: {init_py} not found")
 
     # Patch scraper.py
     with open(scraper_py, "r") as f:
         content = f.read()
 
-    # Add Crawl4AI to 'from . import (...)' using regex
-    if "Crawl4AI" not in content:
-        pattern = r'(from \. import\s*\([^)]*?)\)(\s*\n)'
-
-        def add_crawl4ai(match):
-            inner_with_paren = match.group(1)
-            newline = match.group(2)
-            inner_items = inner_with_paren[inner_with_paren.index('(')+1:]
-            inner_stripped = inner_items.rstrip()
-            if inner_stripped.endswith(','):
-                new_inner = inner_items + '    Crawl4AI,'
-            else:
-                lines = inner_stripped.split('\n')
-                lines[-1] = lines[-1] + ','
-                new_inner = '\n'.join(lines) + '\n    Crawl4AI'
-            return 'from . import (' + new_inner + ')' + newline
-
-        new_content = re.sub(pattern, add_crawl4ai, content, flags=re.DOTALL)
+    # Add separate import line: "from .crawl4ai import Crawl4AI"
+    if "from .crawl4ai import Crawl4AI" not in content:
+        # Insert after the closing paren of the 'from . import (...)' block
+        # Find the line with the closing paren followed by newline
+        pattern = r'(from \. import\s*\([^)]*\))\n'
+        replacement = r'\1\nfrom .crawl4ai import Crawl4AI\n'
+        new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
         if new_content != content:
             content = new_content
-            print("✓ Added Crawl4AI to 'from . import' block")
+            print("✓ Added 'from .crawl4ai import Crawl4AI' to scraper.py")
         else:
-            print("WARNING: Could not patch import block")
+            print("WARNING: Could not add Crawl4AI import line")
+            print(f"First 300 chars:\n{content[:300]}")
             return False
     else:
-        print("✓ Crawl4AI already in imports")
+        print("✓ Crawl4AI import already in scraper.py")
 
     # Add to SCRAPER_CLASSES
     if '"crawl4ai"' not in content:
@@ -110,18 +102,16 @@ def patch_scraper():
 
     with open(scraper_py, "w") as f:
         f.write(content)
-
-    print(f"✓ Patched {scraper_py}")
+    print(f"✓ Patched scraper.py")
     return True
 
 
 def patch_image_provider():
-    """Patch image provider module."""
     image_base = "/usr/src/app/gpt_researcher/llm_provider/image"
     custom_src = "/tmp/custom_providers/image"
 
     if not os.path.exists(image_base):
-        print(f"WARNING: Image provider directory not found at {image_base}")
+        print(f"⚠ Image provider not found at {image_base}")
         return False
 
     if os.path.isdir(custom_src):
@@ -129,12 +119,13 @@ def patch_image_provider():
             src = os.path.join(custom_src, fname)
             dst = os.path.join(image_base, fname)
             shutil.copy2(src, dst)
-            print(f"✓ Copied {fname} to image provider")
+            print(f"✓ Copied {fname}")
+    else:
+        print(f"⚠ Custom image provider source not found at {custom_src}")
     return True
 
 
 def verify():
-    """Verify patches are in place."""
     base_path = "/usr/src/app/gpt_researcher/scraper"
     scraper_py = os.path.join(base_path, "scraper.py")
     init_py = os.path.join(base_path, "__init__.py")
@@ -143,17 +134,17 @@ def verify():
     errors = []
 
     if not os.path.exists(crawl4ai_dir):
-        errors.append("crawl4ai directory not found")
+        errors.append("crawl4ai/ directory missing")
     else:
-        print("✓ crawl4ai directory in place")
+        print("✓ crawl4ai/ directory exists")
 
     if os.path.exists(scraper_py):
         with open(scraper_py, 'r') as f:
             c = f.read()
             if "from .crawl4ai import Crawl4AI" not in c:
-                errors.append("scraper.py missing Crawl4AI import")
+                errors.append("scraper.py missing 'from .crawl4ai import Crawl4AI'")
             else:
-                print("✓ Crawl4AI import in scraper.py")
+                print("✓ Import line for Crawl4AI in scraper.py")
             if '"crawl4ai": Crawl4AI' not in c:
                 errors.append("scraper.py missing Crawl4AI in SCRAPER_CLASSES")
             else:
@@ -172,7 +163,7 @@ def verify():
                 print("✓ Crawl4AI in __all__")
 
     if errors:
-        print("\n✗ VERIFICATION FAILED:")
+        print("\n✗ VERIFICATION FAILED")
         for e in errors:
             print(f"  - {e}")
         return False
@@ -188,6 +179,7 @@ def main():
         verify()
     else:
         print("✗ Patching failed")
+        exit(1)
     print("=== Done ===")
 
 
