@@ -8,6 +8,7 @@ COPY gpt_researcher/llm_provider/image/provider_factory.py /tmp/provider_factory
 COPY gpt_researcher/llm_provider/image/__init__.py /tmp/image_provider_init.py
 COPY entrypoint.sh /tmp/entrypoint.sh
 COPY setup.py /tmp/setup.py
+RUN chmod +x /tmp/entrypoint.sh
 
 ENTRYPOINT ["/tmp/entrypoint.sh"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
