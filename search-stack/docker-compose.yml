@@ -80,7 +80,7 @@ services:
       - IMAGE_GENERATION_MAX_IMAGES=${IMAGE_GENERATION_MAX_IMAGES:-3}
       - FAST_LLM=${FAST_LLM:-moonshotai/kimi-k2.5}
       - SMART_LLM=${SMART_LLM:-minimax/minimax-m2.7}
-      - EMBEDDING=${EMBEDDING:-BAAI/bge-m3}
+      - EMBEDDING=${EMBEDDING:-openai:BAAI/bge-m3}
       - BROWSE_CHUNK_MAX_LENGTH=${BROWSE_CHUNK_MAX_LENGTH:-4000}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
