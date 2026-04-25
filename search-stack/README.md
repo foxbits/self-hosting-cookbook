@@ -46,8 +46,14 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ### GPT-Researcher Settings
 
+GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt.com](https://nano-gpt.com)). Configure the following variables:
+
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the LLM API (default: `https://nano-gpt.com/api/v1`)
+- `FAST_LLM`: Model used for fast operations (default: `moonshotai/kimi-k2.5`)
+- `SMART_LLM`: Model used for comprehensive research (default: `minimax/minimax-m2.7`)
+- `EMBEDDING`: Embedding model for text vectorization (default: `BAAI/bge-m3`)
+- `BROWSE_CHUNK_MAX_LENGTH`: Maximum chunk length for web content (default: `4000`)
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)

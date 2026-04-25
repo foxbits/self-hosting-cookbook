@@ -78,6 +78,10 @@ services:
       - IMAGE_GENERATION_BASE_URL=${IMAGE_GENERATION_BASE_URL:-}
       - IMAGE_GENERATION_MODEL=${IMAGE_GENERATION_MODEL:-models/gemini-2.0-flash-preview-image-generation}
       - IMAGE_GENERATION_MAX_IMAGES=${IMAGE_GENERATION_MAX_IMAGES:-3}
+      - FAST_LLM=${FAST_LLM:-moonshotai/kimi-k2.5}
+      - SMART_LLM=${SMART_LLM:-minimax/minimax-m2.7}
+      - EMBEDDING=${EMBEDDING:-BAAI/bge-m3}
+      - BROWSE_CHUNK_MAX_LENGTH=${BROWSE_CHUNK_MAX_LENGTH:-4000}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
     env_file:
