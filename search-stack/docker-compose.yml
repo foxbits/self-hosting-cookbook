@@ -53,9 +53,40 @@ services:
       start_period: 40s
     networks:
       - home-lab-net
+  gpt-researcher:
+    image: gptresearcher/gpt-researcher:latest
+    container_name: gpt-researcher
+    restart: unless-stopped
+    networks:
+      - home-lab-net
+    ports:
+      - "9706:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://nano-gpt.com/api/v1}
+      - RETRIEVER=searx
+      - SEARX_URL=http://searxng:8080
+      - SCRAPER=${SCRAPER:-bs}
+      - LOGGING_LEVEL=INFO
+      - IMAGE_GENERATION_ENABLED=${IMAGE_GENERATION_ENABLED:-false}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - IMAGE_GENERATION_MODEL=${IMAGE_GENERATION_MODEL:-models/gemini-2.0-flash-preview-image-generation}
+      - IMAGE_GENERATION_MAX_IMAGES=${IMAGE_GENERATION_MAX_IMAGES:-3}
+    volumes:
+      - gpt-researcher-data:/usr/src/app/outputs:rw
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   searxng-data:
+    driver: local
+  gpt-researcher-data:
     driver: local
 
 networks:
