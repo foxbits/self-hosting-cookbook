@@ -10,6 +10,7 @@ Directly modifies /usr/src/app/gpt_researcher/scraper/:
 """
 
 import os
+import re
 import shutil
 
 
