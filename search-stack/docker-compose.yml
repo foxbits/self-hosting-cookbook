@@ -54,7 +54,9 @@ services:
     networks:
       - home-lab-net
   gpt-researcher:
-    image: gptresearcher/gpt-researcher:latest
+    build:
+      context: ./gpt-researcher-scraper
+      dockerfile: Dockerfile
     container_name: gpt-researcher
     restart: unless-stopped
     networks:
@@ -66,7 +68,8 @@ services:
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://nano-gpt.com/api/v1}
       - RETRIEVER=searx
       - SEARX_URL=http://searxng:8080
-      - SCRAPER=${SCRAPER:-bs}
+      - SCRAPER=${SCRAPER:-crawl4ai}
+      - CRAWL4AI_API_URL=${CRAWL4AI_API_URL:-http://crawl4ai:11235}
       - LOGGING_LEVEL=INFO
       - IMAGE_GENERATION_ENABLED=${IMAGE_GENERATION_ENABLED:-false}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}

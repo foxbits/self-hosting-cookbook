@@ -45,7 +45,8 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the LLM API (default: `https://nano-gpt.com/api/v1`)
-- `SCRAPER`: Web scraper method - `bs` (BeautifulSoup, default), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`
+- `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
+- `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
 - `GOOGLE_API_KEY`: Google API key for image generation (required if `IMAGE_GENERATION_ENABLED=true`)
 - `IMAGE_GENERATION_MODEL`: Gemini model for image generation (default: `models/gemini-2.0-flash-preview-image-generation`)
@@ -184,11 +185,12 @@ Image generation is optional and uses Google's Gemini API. To enable:
 
 The scraper is configurable via the `SCRAPER` environment variable:
 
-- `bs` - BeautifulSoup (static, default) - no additional setup
+- `bs` - BeautifulSoup (static) - no additional setup
 - `browser` - Selenium (dynamic) - requires WebDriver setup
 - `nodriver` - NoDriver/ZenDriver (dynamic) - requires `pip install zendriver`
 - `firecrawl` - FireCrawl - requires API key and `pip install firecrawl-py`
 - `tavily_extract` - Tavily Extract - requires API key and `pip install tavily-python`
+- `crawl4ai` - **Local Crawl4AI** (default in this stack, no API key needed) - uses the Crawl4AI service running on port `9705`
 
 
 ### Back-up
