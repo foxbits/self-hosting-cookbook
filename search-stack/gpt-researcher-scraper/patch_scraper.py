@@ -7,13 +7,52 @@ which is where the Docker container places the application code.
 
 We:
 1. Copy the crawl4ai scraper to the scraper directory
-2. Patch scraper.py to:
-   a. Add "from .crawl4ai import Crawl4AI" to the imports
-   b. Add "crawl4ai": Crawl4AI to the SCRAPER_CLASSES dict inside get_scraper()
+2. Patch scraper/__init__.py to add Crawl4AI import and to __all__
+3. Patch scraper/scraper.py to add Crawl4AI to the 'from . import (...)' block
+4. Patch scraper/scraper.py to add "crawl4ai": Crawl4AI to SCRAPER_CLASSES dict
 """
 
 import os
 import shutil
+
+
+def patch_init(base_path):
+    """Patch __init__.py to import Crawl4AI (same pattern as FireCrawl)."""
+    init_py = os.path.join(base_path, "__init__.py")
+    if not os.path.exists(init_py):
+        print(f"WARNING: {init_py} not found")
+        return
+
+    with open(init_py, "r") as f:
+        content = f.read()
+
+    if "crawl4ai" in content:
+        print("Crawl4AI already in __init__.py")
+        return
+
+    # Add import for Crawl4AI after FireCrawl import (same pattern as other scrapers)
+    if "from .firecrawl.firecrawl import FireCrawl" in content:
+        content = content.replace(
+            "from .firecrawl.firecrawl import FireCrawl",
+            "from .firecrawl.firecrawl import FireCrawl\nfrom .crawl4ai.crawl4ai import Crawl4AI"
+        )
+        print("Added Crawl4AI import to __init__.py")
+    else:
+        print("WARNING: Could not find FireCrawl import in __init__.py")
+        return
+
+    # Add to __all__ list after FireCrawl
+    if '"FireCrawl",' in content:
+        content = content.replace(
+            '"FireCrawl",',
+            '"FireCrawl",\n    "Crawl4AI",'
+        )
+        print("Added Crawl4AI to __all__ in __init__.py")
+    else:
+        print("WARNING: Could not find FireCrawl in __all__")
+
+    with open(init_py, "w") as f:
+        f.write(content)
 
 
 def patch_scraper():
@@ -35,80 +74,65 @@ def patch_scraper():
     else:
         print(f"WARNING: Crawl4AI source not found at {crawl4ai_src}")
 
+    # Patch __init__.py first
+    patch_init(base_path)
+
     # Read scraper.py
     with open(scraper_py, "r") as f:
         content = f.read()
 
-    # Add import for Crawl4AI
-    if "crawl4ai" not in content:
+    # Add Crawl4AI to the 'from . import (...)' block using regex
+    if "Crawl4AI" not in content:
         import re
 
-        # Match "from . import (" block and add Crawl4AI before the closing parenthesis
-        # This regex matches: from . import ( ... ) capturing the content inside
-        pattern = r'(from \. import \([^)]*?)(\s*\))'
-
-        def add_crawl4ai_import(match):
-            existing = match.group(1)
-            closing = match.group(2)
-            # Check if there's already a trailing comma
-            if existing.rstrip().endswith(','):
-                return existing + '\n    Crawl4AI,' + closing
+        # Find: from . import ( ... ) including any content inside (non-greedy match)
+        pattern = r'(from \. import\s*\([^)]*?)\)(\s*\n)'
+        
+        def add_crawl4ai(match):
+            full_match = match.group(0)
+            inner_with_paren = match.group(1)  # "from . import ( ...items..."
+            newline = match.group(2)
+            
+            # Extract just the items inside the parens
+            inner_items = inner_with_paren[inner_with_paren.index('(')+1:]
+            
+            # Capitalize: add "    Crawl4AI," before the closing paren
+            # Check if inner_items ends with comma or not
+            inner_items_stripped = inner_items.rstrip()
+            if inner_items_stripped.endswith(','):
+                new_inner = inner_items + '    Crawl4AI,'
             else:
-                # Add comma to last item if needed, then add Crawl4AI
-                stripped = existing.rstrip()
-                if stripped and not stripped.endswith(','):
-                    existing = stripped + ',\n'
-                return existing + '    Crawl4AI,' + closing
+                # Add comma to last line
+                lines = inner_items_stripped.split('\n')
+                lines[-1] = lines[-1] + ','
+                new_inner = '\n'.join(lines) + '\n    Crawl4AI'
+            
+            # Reconstruct: from . import ( items... ) + newline
+            return 'from . import (' + new_inner + ')' + newline
 
-        new_content = re.sub(pattern, add_crawl4ai_import, content, flags=re.DOTALL)
-
+        new_content = re.sub(pattern, add_crawl4ai, content, flags=re.DOTALL)
+        
         if new_content != content:
             content = new_content
-            print("Added Crawl4AI to imports using regex")
+            print("Added Crawl4AI to from . import block using regex")
         else:
-            print("WARNING: Could not find import section to patch with regex")
+            print("WARNING: Could not patch import block with regex")
+            print(f"Pattern did not match - showing first 500 chars of file:\n{content[:500]}")
+            return False
     else:
-        print("Crawl4AI already imported")
+        print("Crawl4AI already in scraper.py imports")
 
     # Add to SCRAPER_CLASSES dict
-    if '"crawl4ai"' not in content and "'crawl4ai'" not in content:
-        # Find SCRAPER_CLASSES dict inside get_scraper and add crawl4ai entry
-        old_dict = '''        SCRAPER_CLASSES = {
-            "pdf": PyMuPDFScraper,
-            "arxiv": ArxivScraper,
-            "bs": BeautifulSoupScraper,
-            "web_base_loader": WebBaseLoaderScraper,
-            "browser": BrowserScraper,
-            "nodriver": NoDriverScraper,
-            "tavily_extract": TavilyExtract,
-            "firecrawl": FireCrawl,
-        }'''
-
-        new_dict = '''        SCRAPER_CLASSES = {
-            "pdf": PyMuPDFScraper,
-            "arxiv": ArxivScraper,
-            "bs": BeautifulSoupScraper,
-            "web_base_loader": WebBaseLoaderScraper,
-            "browser": BrowserScraper,
-            "nodriver": NoDriverScraper,
-            "tavily_extract": TavilyExtract,
-            "firecrawl": FireCrawl,
-            "crawl4ai": Crawl4AI,
-        }'''
-
-        if old_dict in content:
-            content = content.replace(old_dict, new_dict)
+    if '"crawl4ai"' not in content:
+        # Add entry after firecrawl
+        content = content.replace(
+            '"firecrawl": FireCrawl,',
+            '"firecrawl": FireCrawl,\n            "crawl4ai": Crawl4AI,'
+        )
+        if '"crawl4ai": Crawl4AI' in content:
             print("Added crawl4ai to SCRAPER_CLASSES")
         else:
-            # Try to find and patch the dict more flexibly
-            if "\"firecrawl\": FireCrawl," in content:
-                content = content.replace(
-                    '"firecrawl": FireCrawl,',
-                    '"firecrawl": FireCrawl,\n            "crawl4ai": Crawl4AI,'
-                )
-                print("Added crawl4ai to SCRAPER_CLASSES (inline)")
-            else:
-                print("WARNING: Could not find SCRAPER_CLASSES dict to patch")
+            print("WARNING: Could not add crawl4ai to SCRAPER_CLASSES")
     else:
         print("crawl4ai already in SCRAPER_CLASSES")
 
@@ -148,6 +172,8 @@ def verify():
         return True
     except Exception as e:
         print(f"Verification failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 
