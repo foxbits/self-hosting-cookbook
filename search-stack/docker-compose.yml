@@ -64,6 +64,8 @@ services:
     ports:
       - "9706:8000"
     environment:
+      - LANGUAGE=${LANGUAGE}
+      - CURATE_SOURCES=${CURATE_SOURCES}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
       - RETRIEVER=searx
@@ -82,9 +84,10 @@ services:
       - SMART_LLM=${SMART_LLM}
       - STRATEGIC_LLM=${STRATEGIC_LLM}
       - EMBEDDING=${EMBEDDING}
+      - MAX_SEARCH_RESULTS_PER_QUERY=${MAX_SEARCH_RESULTS_PER_QUERY}
+      - MAX_ITERATIONS=${MAX_ITERATIONS}
+      - MAX_SUBTOPICS=${MAX_SUBTOPICS}
       - BROWSE_CHUNK_MAX_LENGTH=${BROWSE_CHUNK_MAX_LENGTH}
-      - OPENAI_EMBEDDING_CHUNK_SIZE=${OPENAI_EMBEDDING_CHUNK_SIZE}
-      - COMPRESSION_ENABLED=${COMPRESSION_ENABLED}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
     env_file:

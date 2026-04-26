@@ -48,15 +48,18 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt.com](https://nano-gpt.com)). Configure the following variables:
 
+- `LANGUAGE`: The language to generate the response in
+- `CURATE_SOURCES`: Whether to curate sources for research. This step adds an LLM run which may increase costs and total run time but improves quality of source selection
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the Open-AI compatible LLM API
 - `FAST_LLM`: Model used for very fast operations with OK intelligence (default: `xiaomi/mimo-v2-flash`), must be prefixed by the provider, e.g. `openai:`
 - `SMART_LLM`: Model used for comprehensive research and the report generation (needs to be high in intelligence), must be prefixed by the provider, e.g. `openai:`
 - `STRATEGIC_LLM`: Model used to generate plan and delegate tasks, needs to support structured outputs and tool calling, must be prefixed by the provider, e.g. `openai:`
-- `EMBEDDING`: Embedding model for text vectorization (default: `BAAI/bge-m3`), must be prefixed by the provider, e.g. `openai:`
+- `EMBEDDING`: Embedding model for text vectorization, must be prefixed by the provider, e.g. `openai:`
+- `MAX_SEARCH_RESULTS_PER_QUERY`: Maximum number of search results to retrieve per query
+- `MAX_ITERATIONS`: Maximum number of iterations for processes like query expansion or search refinement
+- `MAX_SUBTOPICS`: Maximum number of subtopics to generate or consider.
 - `BROWSE_CHUNK_MAX_LENGTH`: Maximum chunk length (characters) for web content (default: `4000`)
-- `OPENAI_EMBEDDING_CHUNK_SIZE`: Maximum number of batches of chunks to use for lang-chain (based on CHUNK_MAX_LENGTH => 4000 / 4 = 1000) and the max number of tokens supported by the embeddings model (e.g. ~80000) => default 8
-- `COMPRESSION_ENABLED`: Enables or disables the context compression (when reading the results of each query, if the raw data is forwarded to the report or everything is compressed). Defaults to `false`
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
