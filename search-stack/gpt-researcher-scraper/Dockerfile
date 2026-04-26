@@ -1,7 +1,7 @@
 FROM gptresearcher/gpt-researcher:latest
 
 # Install openai for image generation
-RUN pip install --no-cache-dir openai
+RUN pip install --no-cache-dir openai langchain-huggingface sentence-transformers
 
 # Copy custom Crawl4AI scraper
 COPY gpt_researcher/scraper/crawl4ai/ /tmp/crawl4ai_scraper/
