@@ -63,10 +63,10 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 - `MIN_RAW_CONTENT_LENGTH`: Minimum length of content returned by search engine considered enough (if below this, will scrape the website using the configured scraping engine). Defaults to 300.
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
-- `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
+- `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`).
 - `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
 - `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
-- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1/images/generations`)
+- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1`)
 - `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
 - `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
 
