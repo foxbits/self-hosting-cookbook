@@ -60,6 +60,9 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 - `MAX_SEARCH_RESULTS_PER_QUERY`: Maximum number of search results to retrieve per query
 - `MAX_ITERATIONS`: Maximum number of iterations for processes like query expansion or search refinement
 - `MAX_SUBTOPICS`: Maximum number of subtopics to generate or consider.
+- `DEEP_RESEARCH_BREADTH`: How many parallel research areas are explored during deep research
+- `DEEP_RESEARCH_DEPTH`: For each of the research area, how many sequential iterations are done
+- `DEEP_RESEARCH_CONCURRENCY`: How many concurrent deep research operations are allowed
 - `MIN_RAW_CONTENT_LENGTH`: Minimum length of content returned by search engine considered enough (if below this, will scrape the website using the configured scraping engine). Defaults to 300.
 - `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
