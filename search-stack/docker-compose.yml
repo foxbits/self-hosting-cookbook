@@ -54,9 +54,7 @@ services:
     networks:
       - home-lab-net
   gpt-researcher:
-    build:
-      context: ./gpt-researcher-scraper
-      dockerfile: Dockerfile
+    image: foxbits/better-gpt-researcher:latest
     container_name: gpt-researcher
     restart: unless-stopped
     networks:
@@ -75,9 +73,8 @@ services:
       - LOGGING_LEVEL=INFO
       - IMAGE_GENERATION_ENABLED=${IMAGE_GENERATION_ENABLED}
       - IMAGE_GENERATION_PROVIDER=${IMAGE_GENERATION_PROVIDER}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - IMAGE_API_KEY=${IMAGE_API_KEY:-}
-      - IMAGE_GENERATION_BASE_URL=${IMAGE_GENERATION_BASE_URL:-}
+      - IMAGE_GENERATION_API_KEY=${IMAGE_GENERATION_API_KEY}
+      - IMAGE_GENERATION_BASE_URL=${IMAGE_GENERATION_BASE_URL}
       - IMAGE_GENERATION_MODEL=${IMAGE_GENERATION_MODEL}
       - IMAGE_GENERATION_MAX_IMAGES=${IMAGE_GENERATION_MAX_IMAGES:-3}
       - FAST_LLM=${FAST_LLM}
@@ -87,7 +84,6 @@ services:
       - MAX_SEARCH_RESULTS_PER_QUERY=${MAX_SEARCH_RESULTS_PER_QUERY}
       - MAX_ITERATIONS=${MAX_ITERATIONS}
       - MAX_SUBTOPICS=${MAX_SUBTOPICS}
-      - BROWSE_CHUNK_MAX_LENGTH=${BROWSE_CHUNK_MAX_LENGTH}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
     env_file:

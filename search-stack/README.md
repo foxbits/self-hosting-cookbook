@@ -64,8 +64,7 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 - `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`)
 - `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
-- `GOOGLE_API_KEY`: Google API key for image generation (required if `IMAGE_GENERATION_PROVIDER=google`)
-- `IMAGE_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
+- `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
 - `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1/images/generations`)
 - `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
 - `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
@@ -195,12 +194,11 @@ Image generation is optional and can use either Google Gemini API or an OpenAI-c
 **Google Gemini API:**
 1. Set `IMAGE_GENERATION_PROVIDER=google`
 2. Set `IMAGE_GENERATION_ENABLED=true`
-3. Provide `GOOGLE_API_KEY`
 
 **OpenAI-compatible API (e.g., nano-gpt.com) (default):**
 1. Set `IMAGE_GENERATION_PROVIDER=openai`
 2. Set `IMAGE_GENERATION_ENABLED=true`
-3. Provide `IMAGE_API_KEY` (or `OPENAI_API_KEY` as fallback)
+3. Provide `IMAGE_GENERATION_API_KEY` (or `OPENAI_API_KEY` as fallback)
 4. Provide `IMAGE_GENERATION_BASE_URL` (e.g., `https://nano-gpt.com/api/v1/images/generations`)
 5. Set `IMAGE_GENERATION_MODEL` to a model supported by your provider (e.g., `dall-e-3`)
 
