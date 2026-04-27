@@ -85,6 +85,7 @@ services:
       - MAX_SEARCH_RESULTS_PER_QUERY=${MAX_SEARCH_RESULTS_PER_QUERY}
       - MAX_ITERATIONS=${MAX_ITERATIONS}
       - MAX_SUBTOPICS=${MAX_SUBTOPICS}
+      - MIN_RAW_CONTENT_LENGTH=${MIN_RAW_CONTENT_LENGTH}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
     env_file:
