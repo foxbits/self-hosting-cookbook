@@ -54,7 +54,9 @@ services:
     networks:
       - home-lab-net
   gpt-researcher:
-    image: foxbits/better-gpt-researcher:latest
+    build:
+      context: ${GPT_RESEARCHER_PATH}
+      dockerfile: Dockerfile
     container_name: gpt-researcher
     restart: unless-stopped
     networks:

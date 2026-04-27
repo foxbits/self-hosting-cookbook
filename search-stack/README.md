@@ -48,6 +48,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt.com](https://nano-gpt.com)). Configure the following variables:
 
+- `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
 - `LANGUAGE`: The language to generate the response in
 - `CURATE_SOURCES`: Whether to curate sources for research. This step adds an LLM run which may increase costs and total run time but improves quality of source selection
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
@@ -79,6 +80,8 @@ The stack runs on the docker network `home-lab-net`. To create it you can use th
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
 
 On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
+
+For GPT Researcher you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and use it in environment variables.
 
 ### Starting the stack
 
