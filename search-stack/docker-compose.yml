@@ -65,7 +65,6 @@ services:
       - "9706:8000"
     environment:
       - LANGUAGE=${LANGUAGE}
-      - CURATE_SOURCES=${CURATE_SOURCES}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL}
       - RETRIEVER=searx
