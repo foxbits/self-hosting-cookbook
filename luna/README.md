@@ -64,7 +64,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `ENABLE_MEMORIES`: enable memory system (default: `True`)
 - `VECTOR_DB`: vector database backend (default: `pgvector`)
 - `POSTGRES_USER`: PostgreSQL user (default: `postgres`)
-- `POSTGRES_PASSWORD`: the password for your postgresql instance
+- `POSTGRES_PASSWORD`: the password for your postgresql user
 
 **Redis / Valkey:**
 - `REDIS_URL`: Redis/Valkey connection URL (default: `redis://datastore-memory:6379/0`)
