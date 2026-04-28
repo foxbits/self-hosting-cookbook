@@ -1,0 +1,84 @@
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main-slim
+    container_name: luna-openwebui
+    restart: unless-stopped
+    ports:
+      - "9707:8080"
+    networks:
+      - home-lab-net
+    volumes:
+      - ./data:/app/backend/data
+    env_file:
+      - .env
+    environment:
+      # --- Security ---
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+
+      # --- OpenAI-Compatible Provider (nano-gpt.com) ---
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-https://nano-gpt.com/api/v1}
+
+      - ENABLE_OLLAMA_API=${ENABLE_OLLAMA_API:-false}
+
+      # --- Multi-User Settings ---
+      - ENABLE_SIGNUP=${ENABLE_SIGNUP:-False}
+      - ENABLE_PASSWORD_AUTH=${ENABLE_PASSWORD_AUTH:-True}
+
+      # --- API Keys (for programmatic access, e.g. workflows) ---
+      - ENABLE_API_KEYS=${ENABLE_API_KEYS:-True}
+
+      # --- Tool Calling (Essentials) ---
+      - ENABLE_TOOL_CALLING=${ENABLE_TOOL_CALLING:-True}
+      - DEFAULT_FUNCTION_CALLING_MODE=${DEFAULT_FUNCTION_CALLING_MODE:-native}
+
+      # --- Default Model (Main Chat) ---
+      - DEFAULT_MODELS=${DEFAULT_MODELS:-openai:moonshotai/kimi-k2.6}
+
+      # --- Background Task Model ---
+      # Uses TASK_MODEL_EXTERNAL (not TASK_MODEL) because we use an external OpenAI-compatible provider, not local Ollama
+      - TASK_MODEL_EXTERNAL=${TASK_MODEL_EXTERNAL:-openai:unsloth/gemma-3-4b-it}
+      - ENABLE_AUTOCOMPLETE_GENERATION=${ENABLE_AUTOCOMPLETE_GENERATION:-True}
+      - ENABLE_FOLLOW_UP_GENERATION=${ENABLE_FOLLOW_UP_GENERATION:-True}
+      - ENABLE_TITLE_GENERATION=${ENABLE_TITLE_GENERATION:-True}
+
+      # --- Image Generation (Wavespeed via OpenAI-compatible engine) ---
+      - ENABLE_IMAGE_GENERATION=${ENABLE_IMAGE_GENERATION:-True}
+      - IMAGE_GENERATION_ENGINE=${IMAGE_GENERATION_ENGINE:-openai}
+      - IMAGE_GENERATION_MODEL=${IMAGE_GENERATION_MODEL:-nano-banana-2}
+      # OpenWebUI OpenAPI-compatible image gen uses IMAGES_OPENAI_* variables
+      - IMAGES_OPENAI_API_BASE_URL=${IMAGES_OPENAI_API_BASE_URL:-https://api.wavespeed.ai/v1}
+      - IMAGES_OPENAI_API_KEY=${IMAGES_OPENAI_API_KEY:-${WAVESPEED_API_KEY:-${OPENAI_API_KEY}}}
+
+      # --- RAG / Knowledge Base ---
+      # Uses nano-gpt.com's OpenAI-compatible embeddings (external, no local processing)
+      - RAG_EMBEDDING_ENGINE=${RAG_EMBEDDING_ENGINE:-openai}
+      - RAG_OPENAI_API_BASE_URL=${RAG_OPENAI_API_BASE_URL:-${OPENAI_API_BASE_URL}}
+      - RAG_OPENAI_API_KEY=${RAG_OPENAI_API_KEY:-${OPENAI_API_KEY}}
+      - RAG_EMBEDDING_MODEL=${RAG_EMBEDDING_MODEL:-text-embedding-3-small}
+
+      # --- Memory System ---
+      - ENABLE_MEMORIES=${ENABLE_MEMORIES:-True}
+
+      # --- Redis / Valkey (from datastore-memory) ---
+      # Valkey is Redis-compatible; connects to the existing datastore-memory service on home-lab-net
+      - REDIS_URL=${REDIS_URL:-redis://datastore-memory:6379/0}
+
+      # --- Model Cache ---
+      - ENABLE_BASE_MODELS_CACHE=${ENABLE_BASE_MODELS_CACHE:-True}
+      - MODELS_CACHE_TTL=${MODELS_CACHE_TTL:-300}
+
+      # --- WebUI Customization ---
+      - WEBUI_NAME=${WEBUI_NAME:-Luna}
+      - WEBUI_URL=${WEBUI_URL:-https://luna.foxbites.net}
+      - DEFAULT_LOCALE=${DEFAULT_LOCALE:-en}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  home-lab-net:
+    external: true
