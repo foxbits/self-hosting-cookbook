@@ -107,7 +107,7 @@ Make sure that you setup the environment variables correctly.
 
 Then use:
 - `make pull` - to update the stack images to latest version
-- `make run` - to just run the system (basic docker compose up command)
+- `make run` - to just run the system (basic docker compose up command); additionaly it will also create the database `openwebui` on first run, if connected to postgres, since the application itself does not create it
 - `make run-update` - to first update the stack (pull), and then run it (run)
 
 OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
