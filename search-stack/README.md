@@ -1,9 +1,10 @@
-This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs
+This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
 - [Understanding the setup](#understanding-the-setup)
   - [Environment variables](#environment-variables)
+  - [GPT-Researcher Settings](#gpt-researcher-settings)
 - [Running](#running)
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
@@ -11,6 +12,11 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
     - [Categories available for SearXNG](#categories-available-for-searxng)
   - [MCP Server for Crawl4AI](#mcp-server-for-crawl4ai)
     - [API Endpoints for Crawl4AI](#api-endpoints-for-crawl4ai)
+  - [GPT Researcher Backend](#gpt-researcher-backend)
+    - [API Endpoints for GPT Researcher](#api-endpoints-for-gpt-researcher)
+    - [MCP Server for GPT Researcher](#mcp-server-for-gpt-researcher)
+    - [Image Generation](#image-generation)
+    - [Scraper Configuration](#scraper-configuration)
   - [Back-up](#back-up)
 
 
@@ -19,6 +25,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 The setup starts the following services:
 - [The SearXNG Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9704`
 - [crawl4ai](https://docs.crawl4ai.com/) at port `9705`
+- [GPT Researcher](https://github.com/assafelovic/gpt-researcher) backend at port `9706`
 
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
 
@@ -37,6 +44,35 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
 - `MAX_CONCURRENT_TASKS`: Depends on the allowed number of concurrent tasks for a crawl, number must be considered with the formula agent count x parallel tasks x 150MB depending on the RAM you allocate and the number of agents you plan to use. Default is 10.
 
+### GPT-Researcher Settings
+
+GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt.com](https://nano-gpt.com)). Configure the following variables:
+
+- `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
+- `LANGUAGE`: The language to generate the response in
+- `CURATE_SOURCES`: Whether to curate sources for research. This step adds an LLM run which may increase costs and total run time but improves quality of source selection
+- `OPENAI_API_KEY`: API key for the LLM provider (required)
+- `OPENAI_BASE_URL`: Base URL for the Open-AI compatible LLM API
+- `FAST_LLM`: Model used for very fast operations with OK intelligence (default: `xiaomi/mimo-v2-flash`), must be prefixed by the provider, e.g. `openai:`
+- `SMART_LLM`: Model used for comprehensive research and the report generation (needs to be high in intelligence), must be prefixed by the provider, e.g. `openai:`
+- `STRATEGIC_LLM`: Model used to generate plan and delegate tasks, needs to support structured outputs and tool calling, must be prefixed by the provider, e.g. `openai:`
+- `EMBEDDING`: Embedding model for text vectorization, must be prefixed by the provider, e.g. `openai:`
+- `MAX_SEARCH_RESULTS_PER_QUERY`: Maximum number of search results to retrieve per query
+- `MAX_ITERATIONS`: Maximum number of iterations for processes like query expansion or search refinement
+- `MAX_SUBTOPICS`: Maximum number of subtopics to generate or consider.
+- `DEEP_RESEARCH_BREADTH`: How many parallel research areas are explored during deep research
+- `DEEP_RESEARCH_DEPTH`: For each of the research area, how many sequential iterations are done
+- `DEEP_RESEARCH_CONCURRENCY`: How many concurrent deep research operations are allowed
+- `MIN_RAW_CONTENT_LENGTH`: Minimum length of content returned by search engine considered enough (if below this, will scrape the website using the configured scraping engine). Defaults to 300.
+- `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
+- `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
+- `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`).
+- `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
+- `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
+- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1`)
+- `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
+- `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
+
 
 ## Running
 
@@ -47,6 +83,8 @@ The stack runs on the docker network `home-lab-net`. To create it you can use th
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
 
 On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
+
+For GPT Researcher you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and use it in environment variables.
 
 ### Starting the stack
 
@@ -62,6 +100,8 @@ Then use:
 SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`), or with [http://searxng:8080](http://searxng:8080) in `home-lab-net`
 
 Crawl4AI will be available at [http://localhost:9705](http://localhost:9705), or with [http://crawl4ai:11235](http://crawl4ai:11235) in `home-lab-net`
+
+GPT Researcher will be available at [http://localhost:9706](http://localhost:9706), or with [http://gpt-researcher:8000](http://gpt-researcher:8000) in `home-lab-net`
 
 #### API Endpoints for SearXNG
 
@@ -115,10 +155,71 @@ For dynamic websites, add in the request body:
   }
 ```
 
-For the `/md` request, use `"f": "raw"` in the body to get the unfit markdown (sometimes the fitting process strips wrong parts of websites, even important ones). 
+For the `/md` request, use `"f": "raw"` in the body to get the unfit markdown (sometimes the fitting process strips wrong parts of websites, even important ones).
 For the `/crawl` request, you can let the agent use the `raw_markdown` content, which is the unfit one and contains also links to media (separately, media is also in the `media` object).
+
+
+### GPT Researcher Backend
+
+GPT Researcher is an autonomous agent that conducts deep research on any topic using LLM providers. The backend exposes REST API endpoints and an MCP server for integration with other AI assistants.
+
+#### API Endpoints for GPT Researcher
+
+For full details see [the official documentation](https://docs.gptr.dev/docs/gpt-researcher/gptr/querying-the-backend).
+
+| Endpoint | Description | Format |
+|----------|-------------|--------|
+| `GET /health` | Health check | JSON |
+| `POST /research` `{ query: "", report_type: "research_report" }` | Conduct autonomous research | JSON |
+| `POST /report` `{ query: "", report_type: "research_report" }` | Generate research report | JSON/Markdown |
+| `GET /outputs/` | Access generated reports | File |
+
+#### MCP Server for GPT Researcher
+
+The GPT Researcher backend exposes an MCP server for AI assistants to perform deep research:
+
+- Server-Sent Events (SSE): `http://localhost:9706/mcp/sse`
+- WebSocket: `ws://localhost:9706/mcp/ws`
+
+Example to add as MCP server:
+```
+mcp add --transport sse gpt-researcher http://localhost:9706/mcp/sse
+```
+
+The MCP server provides:
+- `deep_research` - Perform autonomous web research
+- `quick_search` - Fast web search
+- `write_report` - Generate a report from research
+- `get_research_sources` - Get sources used in research
+- `get_research_context` - Get full research context
+
+#### Image Generation
+
+Image generation is optional and can use either Google Gemini API or an OpenAI-compatible API.
+
+**Google Gemini API:**
+1. Set `IMAGE_GENERATION_PROVIDER=google`
+2. Set `IMAGE_GENERATION_ENABLED=true`
+
+**OpenAI-compatible API (e.g., nano-gpt.com) (default):**
+1. Set `IMAGE_GENERATION_PROVIDER=openai`
+2. Set `IMAGE_GENERATION_ENABLED=true`
+3. Provide `IMAGE_GENERATION_API_KEY` (or `OPENAI_API_KEY` as fallback)
+4. Provide `IMAGE_GENERATION_BASE_URL` (e.g., `https://nano-gpt.com/api/v1/images/generations`)
+5. Set `IMAGE_GENERATION_MODEL` to a model supported by your provider (e.g., `dall-e-3`)
+
+#### Scraper Configuration
+
+The scraper is configurable via the `SCRAPER` environment variable:
+
+- `bs` - BeautifulSoup (static) - no additional setup
+- `browser` - Selenium (dynamic) - requires WebDriver setup
+- `nodriver` - NoDriver/ZenDriver (dynamic) - requires `pip install zendriver`
+- `firecrawl` - FireCrawl - requires API key and `pip install firecrawl-py`
+- `tavily_extract` - Tavily Extract - requires API key and `pip install tavily-python`
+- `crawl4ai` - **Local Crawl4AI** (default in this stack, no API key needed) - uses the Crawl4AI service running on port `9705`
 
 
 ### Back-up
 
-The configuration and data will be stored in these docker volumes: [`searxng-data`] and in these directories: [`./searxng/core-config`] - so this is what you have to back-up.
+The configuration and data will be stored in these docker volumes: [`searxng-data`], [`gpt-researcher-data`] and in these directories: [`./searxng/core-config`] - so this is what you have to back-up.
