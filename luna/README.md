@@ -80,7 +80,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `ENABLE_SIGNUP`: allow public registration (default: `False`)
 - `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
 - `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`)
-- `OAUTH_CLIENT_ID`: OAuth client ID from your provider. For all of the OAUTH-x items, you need to create a new application on your auth website (if using one) and add the connection details here - you can find details under [`fusionauth`](../fusionauth/). For valid redirect url use `OPENID_REDIRECT_URI` and for valid URLs use `WEBUI_URL`. Make sure to not enable registration / self-service registration if you do not want random users to create accounts on your auth server.
+- `OAUTH_CLIENT_ID`: OAuth client ID from your provider. For all of the OAUTH-x items, you need to create a new application on your auth website (if using one) and add the connection details here - you can find details under [`fusionauth`](../fusionauth/). For valid redirect url use `OPENID_REDIRECT_URI` and for valid URLs use `WEBUI_URL`. Make sure to not enable registration / self-service registration if you do not want random users to create accounts on your auth server. Create an user and register it to your application (this way you can select username for the app and other details)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret from your provider
 - `OPENID_PROVIDER_URL`: OIDC discovery URL (e.g., `https://auth.yoursite.net/<tenant-id>/.well-known/openid-configuration`) - Make sure to replace the <tenant-id> with your tenant id
 - `OAUTH_PROVIDER_NAME`: display name for the OAuth provider
@@ -115,19 +115,7 @@ OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 
 ### Configure the stack
 
-1. First login: If `ENABLE_PASSWORD_AUTH=False` (default), you'll need OAuth configured first. If `ENABLE_SIGNUP=False` (default), the first user must be created via OAuth or you can temporarily enable signup - the first user logging in will be the admin.
-2. Configure your AI provider:
-   1. Go to **Admin Panel → Settings → Connections → OpenAI**
-   2. Verify the API base URL and key from `.env` are detected
-   3. If models don't appear, add them manually in **Model IDs (Filter)** field
-3. (Optional) Configure tool integrations via **Admin Panel → Settings → Tools → MCP**:
-   1. Add MCP servers: SearXNG (`http://searxng:8080/mcp/sse`), GPT Researcher (`http://gpt-researcher:8000/mcp/sse`), Crawl4AI (`http://crawl4ai:11235/mcp/sse`)
-   2. Enable tools for use in chats - they appear in the `+` menu in chat input
-4. (Optional) Configure OAuth SSO:
-   1. Set `WEBUI_URL` in `.env` (required for redirect URI)
-   2. Configure your OAuth provider (e.g., FusionAuth) with redirect URI: `https://luna.foxbites.net/oauth/oidc/callback`
-   3. Set OAuth variables in `.env`: `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, `OPENID_PROVIDER_URL`, `OAUTH_PROVIDER_NAME`, `OPENID_REDIRECT_URI`
-   4. Restart the stack
+1. Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login with the provider (and user) you have set up. Alternatively, if not using OAUTH, you will have to create an username && password.
 
 **Important:** Verify that model IDs are available on your provider. Some providers use different naming. If a model doesn't appear, add it manually in **Admin → Connections → OpenAI → Model IDs (Filter)**.
 
