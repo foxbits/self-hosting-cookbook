@@ -31,11 +31,11 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 **LLM Providers:**
 - `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL (default: `https://nano-gpt.com/api/v1`)
-- `OPENAI_API_KEY`: your API key for the LLM provider
+- `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
 - `ENABLE_OLLAMA_API`: enable local Ollama (default: `false`)
 
 **Model Configuration:**
-- `DEFAULT_MODELS`: main chat model (default: `openai:deepseek/deepseek-v4-pro`)
+- `DEFAULT_MODELS`: main chat model (default: `openai:deepseek/deepseek-v4-pro`) - make sure to use the exact naming from your provider
 - `TASK_MODEL_EXTERNAL`: fast model for non-chat tasks like title/follow-up generation (default: `openai:unsloth/gemma-3-4b-it`)
 - `ENABLE_AUTOCOMPLETE_GENERATION`: enable autocomplete suggestions (default: `True`)
 - `ENABLE_FOLLOW_UP_GENERATION`: enable follow-up question generation (default: `True`)
@@ -55,10 +55,10 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `IMAGE_GENERATION_MODEL`: image generation model (default: `nano-banana-2`)
 - `ENABLE_IMAGE_EDIT`: enable image editing (default: `true`)
 - `IMAGE_EDIT_MODEL`: image edit model (default: `nano-banana-2-edit`)
-- `IMAGES_OPENAI_API_BASE_URL`: wavespeed.ai base URL for image generation (default: `https://api.wavespeed.ai/v1`)
-- `IMAGES_OPENAI_API_KEY`: your wavespeed.ai API key
-- `IMAGES_EDIT_OPENAI_API_BASE_URL`: wavespeed.ai base URL for image editing (default: `https://api.wavespeed.ai/v1`)
-- `IMAGES_EDIT_OPENAI_API_KEY`: your wavespeed.ai API key for editing
+- `IMAGES_OPENAI_API_BASE_URL`: your open-ai compatible image generator api, e.g. wavespeed.ai (default: `https://api.wavespeed.ai/v1`)
+- `IMAGES_OPENAI_API_KEY`: your API key for image generation (create one on your provider's website)
+- `IMAGES_EDIT_OPENAI_API_BASE_URL`: your open-ai compatible image editor api, e.g. wavespeed.ai (default: `https://api.wavespeed.ai/v1`)
+- `IMAGES_EDIT_OPENAI_API_KEY`: your API key for image editing (create one on your provider's website)
 
 **Memory & Vector Database:**
 - `ENABLE_MEMORIES`: enable memory system (default: `True`)
@@ -80,9 +80,9 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `ENABLE_SIGNUP`: allow public registration (default: `False`)
 - `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
 - `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`)
-- `OAUTH_CLIENT_ID`: OAuth client ID from your provider
+- `OAUTH_CLIENT_ID`: OAuth client ID from your provider. For all of the OAUTH-x items, you need to create a new application on your auth website (if using one) and add the connection details here - you can find details under [`fusionauth`](../fusionauth/). For valid redirect url use `OPENID_REDIRECT_URI` and for valid URLs use `WEBUI_URL`. Make sure to not enable registration / self-service registration if you do not want random users to create accounts on your auth server.
 - `OAUTH_CLIENT_SECRET`: OAuth client secret from your provider
-- `OPENID_PROVIDER_URL`: OIDC discovery URL (e.g., `https://auth.yoursite.net/.well-known/openid-configuration`)
+- `OPENID_PROVIDER_URL`: OIDC discovery URL (e.g., `https://auth.yoursite.net/<tenant-id>/.well-known/openid-configuration`) - Make sure to replace the <tenant-id> with your tenant id
 - `OAUTH_PROVIDER_NAME`: display name for the OAuth provider
 - `OPENID_REDIRECT_URI`: OAuth callback URL (e.g., `https://your-instance.your-site.net/oauth/oidc/callback`)
 
