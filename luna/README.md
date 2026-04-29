@@ -79,7 +79,9 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `ENABLE_API_KEYS`: allow users to create API keys for external access (default: `True`)
 - `ENABLE_SIGNUP`: allow public registration (default: `False`)
 - `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
-- `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`)
+- `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`). Set to true if you do not plan to use OAUTH (3rd party) login (as well as the form-disabling env vars below)
+- `ENABLE_LOGIN_FORM`: enable the login user+password form (default: `False`)
+- `ENABLE_PASSWORD_CHANGE_FORM`: enable the password reset form from Account settings (default: `False`)
 - `OAUTH_CLIENT_ID`: OAuth client ID from your provider. For all of the OAUTH-x items, you need to create a new application on your auth website (if using one) and add the connection details here - you can find details under [`fusionauth`](../fusionauth/). For valid redirect url use `OPENID_REDIRECT_URI` and for valid URLs use `WEBUI_URL`. Make sure to not enable registration / self-service registration if you do not want random users to create accounts on your auth server. Create an user and register it to your application (this way you can select username for the app and other details)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret from your provider
 - `OPENID_PROVIDER_URL`: OIDC discovery URL (e.g., `https://auth.yoursite.net/<tenant-id>/.well-known/openid-configuration`) - Make sure to replace the <tenant-id> with your tenant id
