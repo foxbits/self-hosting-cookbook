@@ -101,6 +101,8 @@ The stack also needs to be exposed through HTTPS to your connecting devices / se
 
 If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to set `ENABLE_PASSWORD_AUTH` to true and set all the OAUTH-related env vars to empty.
 
+The stack allows you (even if OpenWebUI does not) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static`](./static/) directory, including a [`custom.css`](./static/custom.css), so have fun!
+
 ### Starting the stack
 
 You will have to have `docker` and `docker compose` installed on the host machine.
