@@ -1,7 +1,8 @@
-.PHONY: pull run run-update update-run create-db delete-db
+.PHONY: build run run-update update-run create-db delete-db
 
-pull:
+build:
 	docker compose pull
+	docker compose build
 
 create-db:
 	@if [ "$$(grep -E '^DATABASE_TYPE=' .env | cut -d'=' -f2)" = "postgresql" ]; then \
@@ -19,7 +20,7 @@ run:
 	$(MAKE) create-db
 
 run-update:
-	$(MAKE) pull
+	$(MAKE) build
 	$(MAKE) run
 
 # Alias for run-update
