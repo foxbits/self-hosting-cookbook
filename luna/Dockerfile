@@ -27,3 +27,5 @@ COPY static/splash-dark.png /app/backend/open_webui/static/splash-dark.png
 COPY static/splash.png /app/backend/open_webui/static/splash.png
 COPY static/web-app-manifest-192x192.png /app/backend/open_webui/static/web-app-manifest-192x192.png
 COPY static/web-app-manifest-512x512.png /app/backend/open_webui/static/web-app-manifest-512x512.png
+
+RUN find /app -type f -exec sed -i 's/(Open WebUI)//g' {} +
