@@ -125,6 +125,6 @@ OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 
 ### Back-up
 
-The configuration and data will be stored in the local `./data` directory - so this is what you have to back-up.
+The configuration and data will be stored in the `openwebui-data` Docker volume and in the `openwebui` PostgreSQL database - so back this up.
 
 Also back up the `.env` file (contains API keys and configuration).

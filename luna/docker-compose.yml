@@ -10,7 +10,7 @@ services:
     networks:
       - home-lab-net
     volumes:
-      - ${DATA_DIR}:/app/backend/data
+      - openwebui-data:/app/backend/data
     env_file:
       - .env
     environment:
@@ -26,3 +26,6 @@ services:
 networks:
   home-lab-net:
     external: true
+
+volumes:
+  openwebui-data:
