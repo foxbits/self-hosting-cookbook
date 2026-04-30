@@ -93,15 +93,11 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ### Pre-requisites
 
-The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
-
-This stack depends on a SQL database (PostgreSQL) and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) - database name `openwebui` - and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
-
-The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
-
-If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to set `ENABLE_PASSWORD_AUTH` to true and set all the OAUTH-related env vars to empty.
-
-The stack allows you (even if OpenWebUI does not) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static`](./static/) directory, including a [`custom.css`](./static/custom.css), so have fun!
+1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
+2. This stack depends on a SQL database (PostgreSQL) and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) - database name `openwebui` - and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
+3. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
+4. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
+5. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. Have fun!
 
 ### Starting the stack
 
