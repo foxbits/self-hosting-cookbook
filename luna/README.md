@@ -35,8 +35,8 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `ENABLE_OLLAMA_API`: enable local Ollama (default: `false`)
 
 **Model Configuration:**
-- `DEFAULT_MODELS`: main chat model (default: `openai:deepseek/deepseek-v4-pro`) - make sure to use the exact naming from your provider
-- `TASK_MODEL_EXTERNAL`: fast model for non-chat tasks like title/follow-up generation (default: `openai:unsloth/gemma-3-4b-it`)
+- `DEFAULT_MODELS`: main chat model (default: `moonshotai/kimi-k2.6`) - make sure to use the exact naming from your provider
+- `TASK_MODEL_EXTERNAL`: fast model for non-chat tasks like title/follow-up generation (default: `unsloth/gemma-3-4b-it`)
 - `ENABLE_AUTOCOMPLETE_GENERATION`: enable autocomplete suggestions (default: `True`)
 - `ENABLE_FOLLOW_UP_GENERATION`: enable follow-up question generation (default: `True`)
 - `ENABLE_TITLE_GENERATION`: enable automatic chat title generation (default: `True`)
@@ -52,12 +52,12 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 **Image Generation:**
 - `ENABLE_IMAGE_GENERATION`: enable image generation (default: `True`)
 - `IMAGE_GENERATION_ENGINE`: image generation engine (default: `openai`)
-- `IMAGE_GENERATION_MODEL`: image generation model (default: `nano-banana-2`)
+- `IMAGE_GENERATION_MODEL`: image generation model (default: `qwen-image`)
 - `ENABLE_IMAGE_EDIT`: enable image editing (default: `true`)
-- `IMAGE_EDIT_MODEL`: image edit model (default: `nano-banana-2-edit`)
-- `IMAGES_OPENAI_API_BASE_URL`: your open-ai compatible image generator api, e.g. wavespeed.ai (default: `https://api.wavespeed.ai/v1`)
+- `IMAGE_EDIT_MODEL`: image edit model (default: `qwen-image`)
+- `IMAGES_OPENAI_API_BASE_URL`: your open-ai compatible image generator api
 - `IMAGES_OPENAI_API_KEY`: your API key for image generation (create one on your provider's website)
-- `IMAGES_EDIT_OPENAI_API_BASE_URL`: your open-ai compatible image editor api, e.g. wavespeed.ai (default: `https://api.wavespeed.ai/v1`)
+- `IMAGES_EDIT_OPENAI_API_BASE_URL`: your open-ai compatible image editor api
 - `IMAGES_EDIT_OPENAI_API_KEY`: your API key for image editing (create one on your provider's website)
 
 **Memory & Vector Database:**
