@@ -25,7 +25,10 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 **Data Directory:**
 - `DATA_DIR`: data directory mapped on the local machine (default: `./data`)
 
-**Tool Calling:**
+**General settings:**
+- `WEBUI_NAME`: display name for your instance (default: `Your-Instance-Name`)
+- `WEBUI_URL`: your public URL (e.g., `https://your-instance.your-site.net`) - required for OAuth/SSO
+- `DEFAULT_LOCALE`: default language locale (default: `en`)
 - `ENABLE_TOOL_CALLING`: enable tool calling support (default: `True`)
 - `DEFAULT_FUNCTION_CALLING_MODE`: function calling mode, native recommended for modern models (default: `native`)
 
@@ -66,24 +69,21 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `VECTOR_DB`: vector database backend (default: `pgvector`)
 - `POSTGRES_USER`: PostgreSQL user (default: `postgres`)
 - `POSTGRES_PASSWORD`: the password for your postgresql user
-
-**Redis / Valkey:**
 - `REDIS_URL`: Redis/Valkey connection URL (default: `redis://datastore-memory:6379/0`)
-
-**WebUI Customization:**
-- `WEBUI_NAME`: display name for your instance (default: `Your-Instance-Name`)
-- `WEBUI_URL`: your public URL (e.g., `https://your-instance.your-site.net`) - required for OAuth/SSO
-- `DEFAULT_LOCALE`: default language locale (default: `en`)
 
 **Auth Settings:**
 - `WEBUI_SECRET_KEY`: generate with `openssl rand -hex 32`
 - `ENABLE_API_KEYS`: allow users to create API keys for external access (default: `True`)
 - `CORS_ALLOW_ORIGIN`: for security (and also for not getting errors) - set this to the adress where you're going to be accessing your instance, e.g. https://your-instance.your-site.net
 - `ENABLE_SIGNUP`: allow public registration (default: `False`)
-- `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
+
+**Default user/password authentication (not recommended, better to use OAuth SSO in production)**
 - `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`). Set to true if you do not plan to use OAUTH (3rd party) login (as well as the form-disabling env vars below)
 - `ENABLE_LOGIN_FORM`: enable the login user+password form (default: `False`)
 - `ENABLE_PASSWORD_CHANGE_FORM`: enable the password reset form from Account settings (default: `False`)
+
+**OAuth SSO Settings**
+- `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
 - `OAUTH_CLIENT_ID`: OAuth client ID from your provider. For all of the OAUTH-x items, you need to create a new application on your auth website (if using one) and add the connection details here - you can find details under [`fusionauth`](../fusionauth/). For valid redirect url use `OPENID_REDIRECT_URI` and for valid URLs use `WEBUI_URL`. Make sure to not enable registration / self-service registration if you do not want random users to create accounts on your auth server. Create an user and register it to your application (this way you can select username for the app and other details)
 - `OAUTH_CLIENT_SECRET`: OAuth client secret from your provider
 - `OPENID_PROVIDER_URL`: OIDC discovery URL (e.g., `https://auth.yoursite.net/<tenant-id>/.well-known/openid-configuration`) - Make sure to replace the <tenant-id> with your tenant id
@@ -98,8 +98,9 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 2. This stack depends on a SQL database (PostgreSQL) and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) - database name `openwebui` - and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
 3. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
-4. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
-5. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
+4. The stack has pre-configured recommended security settings enabled by default (see the compose file)
+5. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
+6. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
 
 ### Starting the stack
 
