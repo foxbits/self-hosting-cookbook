@@ -52,6 +52,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 **Image Generation:**
 - `ENABLE_IMAGE_GENERATION`: enable image generation (default: `True`)
 - `IMAGE_GENERATION_ENGINE`: image generation engine (default: `openai`)
+- `IMAGE_SIZE`: image generation default size, when not specified in the promot - defaults to 1024x1024 (1:1)
 - `IMAGE_GENERATION_MODEL`: image generation model (default: `qwen-image`)
 - `ENABLE_IMAGE_EDIT`: enable image editing (default: `true`)
 - `IMAGE_EDIT_MODEL`: image edit model (default: `qwen-image`)
