@@ -78,6 +78,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 **Auth Settings:**
 - `WEBUI_SECRET_KEY`: generate with `openssl rand -hex 32`
 - `ENABLE_API_KEYS`: allow users to create API keys for external access (default: `True`)
+- `CORS_ALLOW_ORIGIN`: for security (and also for not getting errors) - set this to the adress where you're going to be accessing your instance, e.g. https://your-instance.your-site.net
 - `ENABLE_SIGNUP`: allow public registration (default: `False`)
 - `ENABLE_OAUTH_SIGNUP`: allow OAuth signups, auto-creates account on first login (default: `True`)
 - `ENABLE_PASSWORD_AUTH`: enable password login (default: `False`). Set to true if you do not plan to use OAUTH (3rd party) login (as well as the form-disabling env vars below)
