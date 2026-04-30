@@ -2,7 +2,7 @@
 
 build:
 	docker compose pull
-	docker compose build
+	docker compose build --no-cache
 
 create-db:
 	@if [ "$$(grep -E '^DATABASE_TYPE=' .env | cut -d'=' -f2)" = "postgresql" ]; then \
