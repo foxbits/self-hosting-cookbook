@@ -20,31 +20,20 @@ The stack is configured to restart automatically, so on a machine restart, it al
 
 ### Environment variables
 
-The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
-
-**Data Directory:**
-- `DATA_DIR`: data directory mapped on the local machine (default: `./data`)
+The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables that might need changing:
 
 **General settings:**
 - `WEBUI_NAME`: display name for your instance (default: `Your-Instance-Name`)
 - `WEBUI_URL`: your public URL (e.g., `https://your-instance.your-site.net`) - required for OAuth/SSO
 - `DEFAULT_LOCALE`: default language locale (default: `en`)
-- `ENABLE_TOOL_CALLING`: enable tool calling support (default: `True`)
-- `DEFAULT_FUNCTION_CALLING_MODE`: function calling mode, native recommended for modern models (default: `native`)
 
 **LLM Providers:**
 - `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL (default: `https://nano-gpt.com/api/v1`)
 - `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
-- `ENABLE_OLLAMA_API`: enable local Ollama (default: `false`)
 
 **Model Configuration:**
 - `DEFAULT_MODELS`: main chat model (default: `moonshotai/kimi-k2.6`) - make sure to use the exact naming from your provider
 - `TASK_MODEL_EXTERNAL`: fast model for non-chat tasks like title/follow-up generation (default: `unsloth/gemma-3-4b-it`)
-- `ENABLE_AUTOCOMPLETE_GENERATION`: enable autocomplete suggestions (default: `True`)
-- `ENABLE_FOLLOW_UP_GENERATION`: enable follow-up question generation (default: `True`)
-- `ENABLE_TITLE_GENERATION`: enable automatic chat title generation (default: `True`)
-- `ENABLE_BASE_MODELS_CACHE`: cache model list from provider (default: `True`)
-- `MODELS_CACHE_TTL`: cache TTL in seconds (default: `300`)
 
 **RAG / Embeddings:**
 - `RAG_EMBEDDING_ENGINE`: embedding engine to use (default: `openai`)
@@ -69,7 +58,6 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `VECTOR_DB`: vector database backend (default: `pgvector`)
 - `POSTGRES_USER`: PostgreSQL user (default: `postgres`)
 - `POSTGRES_PASSWORD`: the password for your postgresql user
-- `REDIS_URL`: Redis/Valkey connection URL (default: `redis://datastore-memory:6379/0`)
 
 **Auth Settings:**
 - `WEBUI_SECRET_KEY`: generate with `openssl rand -hex 32`
