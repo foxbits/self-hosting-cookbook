@@ -107,8 +107,21 @@ OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 ### Configure the stack
 
 1. Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login with the provider (and user) you have set up. Alternatively, if not using OAUTH, you will have to create an username && password.
-
-**Important:** Verify that model IDs are available on your provider. Some providers use different naming. If a model doesn't appear, add it manually in **Admin → Connections → OpenAI → Model IDs (Filter)**.
+2. Go to Settings -> Account and fill in your details.
+3. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only.
+4. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
+5. Go to Admin Panel -> Settings -> Models
+   1. Go to the top „Settings” button and make sure that in the Model Params, Function Calling is set to Native.
+   2. Disable all the models that you do not plan to use (if your provider offers many). 
+   3. You can also rename models from their defaults, add custom instructions for each of them if you want to, also enabling / disabling functionalities, and creating new models basedo on pre-existing LLMs. 
+   4. You can also add specific 'profile pictures' that will appear in chat next to your models. 
+   5. Make sure to also mark them as 'public' to not be visible only to the Admin user, if you plan to have other users using your instance.
+   6. Validate for all the models that you plan to use that Function Calling is set to Native.
+6. Go to Admin Panel - Settings -> WebSearch
+   1. Enable it with engine as "searxng"
+   2. For Searxng Query URL set `http://searxng:8080/search?q=<query>`
+   3. For language set `all`
+   4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
 
 
 ### Back-up
