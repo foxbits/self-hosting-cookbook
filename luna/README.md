@@ -6,6 +6,8 @@ This is the docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
   - [Configure the stack](#configure-the-stack)
+    - [For your user](#for-your-user)
+    - [For the server](#for-the-server)
   - [Back-up](#back-up)
 
 
@@ -106,19 +108,24 @@ OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 
 ### Configure the stack
 
-1. Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login with the provider (and user) you have set up. Alternatively, if not using OAUTH, you will have to create an username && password.
-2. Go to Settings -> Account and fill in your details.
-3. Go to Settings -> Personalization and enable Memory if you want the assistant to remember things about you.
-4. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only.
-5. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
-6. Go to Admin Panel -> Settings -> Models
+Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login with the provider (and user) you have set up. Alternatively, if not using OAUTH, you will have to create an username && password. The first user logging in will be the admin.
+
+#### For your user
+1. Go to Settings -> Account and fill in your details.
+2. Go to Settings -> Personalization and enable Memory if you want the assistant to remember things about you.
+3. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only.
+4. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
+
+
+#### For the server
+1. Go to Admin Panel -> Settings -> Models
    1. Go to the top „Settings” button and make sure that in the Model Params, Function Calling is set to Native.
    2. Disable all the models that you do not plan to use (if your provider offers many). 
    3. You can also rename models from their defaults, add custom instructions for each of them if you want to, also enabling / disabling functionalities, and creating new models basedo on pre-existing LLMs. 
    4. You can also add specific 'profile pictures' that will appear in chat next to your models. 
    5. Make sure to also mark them as 'public' to not be visible only to the Admin user, if you plan to have other users using your instance.
    6. Validate for all the models that you plan to use that Function Calling is set to Native.
-7. Go to Admin Panel - Settings -> WebSearch
+2. Go to Admin Panel - Settings -> WebSearch
    1. Enable it with engine as "searxng"
    2. For Searxng Query URL set `http://searxng:8080/search?q=<query>`
    3. For language set `all`
