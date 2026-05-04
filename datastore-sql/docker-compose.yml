@@ -1,6 +1,6 @@
 services:
   datastore-sql:
-    image: pgvector/pgvector:pg16
+    image: tensorchord/vchord-postgres:pg16-v1.1.1
     container_name: datastore-sql
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
