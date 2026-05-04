@@ -25,6 +25,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 The setup starts the following services:
 - [The SearXNG Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9704`
 - [crawl4ai](https://docs.crawl4ai.com/) at port `9705`
+- [open-crawl](https://github.com/foxbits/open-crawl) at port `9708`
 - [GPT Researcher](https://github.com/assafelovic/gpt-researcher) backend at port `9706`
 
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
@@ -78,13 +79,11 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 
 ### Pre-requisites
 
-The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
-
-This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
-
-On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
-
-For GPT Researcher you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and use it in environment variables.
+1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
+2. This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
+3. On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
+4. For GPT Researcher, this stack (temporarily) uses a fork of it, to be able to use crawl4ai as engine (and some embeddings fixes), therefore you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and set the path to it through `GPT_RESEARCHER_PATH`.
+5. For Crawl4AI, this stach also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy on top of crawl4ai that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
 
 ### Starting the stack
 
