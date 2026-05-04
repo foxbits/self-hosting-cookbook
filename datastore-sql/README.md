@@ -1,4 +1,4 @@
-This is the docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically.
+This is the docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically, with vector database support.
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -42,6 +42,8 @@ Then use:
 - `make run-update` - to first update the stack (pull), and then run it (run)
 
 Other systems can be connected directly to the database server from the host, or through the `datastore-sql` name if they run on the same docker network (`home-lab-net`), at port `5432`.
+
+On databases that need vector support, run: `CREATE EXTENSION vector;`
 
 ### Back-up
 

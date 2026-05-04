@@ -53,6 +53,26 @@ services:
       start_period: 40s
     networks:
       - home-lab-net
+  open-crawl:
+    build:
+      context: ${OPENCRAWL_PATH}
+      dockerfile: Dockerfile
+    container_name: open-crawl
+    restart: unless-stopped
+    networks:
+      - home-lab-net
+    ports:
+      - "9708:8080"
+    environment:
+      - LOG_LEVEL=info
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
   gpt-researcher:
     build:
       context: ${GPT_RESEARCHER_PATH}
@@ -94,7 +114,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8000"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -1,0 +1,31 @@
+services:
+  openwebui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: luna-openwebui
+    restart: unless-stopped
+    ports:
+      - "9707:8080"
+    networks:
+      - home-lab-net
+    volumes:
+      - openwebui-data:/app/backend/data
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@datastore-sql:5432/openwebui
+      - PGVECTOR_DB_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@datastore-sql:5432/openwebui
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  home-lab-net:
+    external: true
+
+volumes:
+  openwebui-data:
