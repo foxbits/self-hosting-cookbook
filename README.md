@@ -20,17 +20,30 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 
 ### Pre-requisites
 
-1. Before using any services from this suite, you need to create the underlying home lab docker network, by running `make create-network`
+1. Before using any services from this suite, you need to create the underlying home lab docker network, by running `make create-network`, and define the execution order (see below)
+
+### Execution order
+
+The `EXECUTION_ORDER` environment variable controls the order in which services are updated. It is read in the following priority:
+
+1. `.env` file (highest priority)
+2. `.env.default` file (fallback)
+
+If `EXECUTION_ORDER` is not set in either file, `make run-update-all` will fail. Copy `.env.default` to `.env` and edit it to customize the order. The default order is:
+
+```
+datastore-memory datastore-sql fusionauth beszel portainer actual plex-server scrobblex arr-stack immich jenkins search-stack luna
+```
 
 ### How to run
 
 1. Select a service you want to use and follow the instructions from the Readme to set it up
-2. Use `make run-update-all` to update all the running services (make sure to set the `EXCLUDE` env var)
+2. Use `make run-update-all` to update all the running services (services are updated in the order defined by `EXECUTION_ORDER`)
 
 ### Available commands
 
 The following commands are available at repo-level in the [Makefile](Makefile) (they require `make`):
 
 1. `make create-network` - creates the underlying docker network (`home-lab-net`) that is required for inter-container communication
-2. `make run-update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each); if you want to exclude certain apps (e.g. if you do not use them), add a `.env` file and set the `EXCLUDE` value there as a space-separated list of directory names
+2. `make run-update-all` - updates all of the applications to the latest stable version (runs the `update-run` command of each) in the order defined by the `EXECUTION_ORDER` environment variable; the order can be set in a `.env` file (highest priority) or `.env.default` file (fallback); if not set, the command fails
 3. `make clean-disk` - runs a set of well-known commands that deletes all disk data like logs, old system updates, old docker volumes etc.
