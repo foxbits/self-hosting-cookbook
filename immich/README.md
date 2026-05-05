@@ -29,7 +29,8 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `IMMICH_VERSION`: The Immich version to use. You can pin this to a specific version like `v1.71.0` (default: `release`)
 
 **Redis/Valkey:**
-- `REDIS_URL`: URL for the Redis/Valkey instance (default: `redis://datastore-memory:6379/0`)
+- `REDIS_HOSTNAME`: The hostname of the redis instance you use (default: `datastore-memory`)
+- `REDIS_PORT`: The port of the redis instance you use (default: `6379`)
 
 **Database:**
 - `DB_PASSWORD`: PostgreSQL password (change from default)
