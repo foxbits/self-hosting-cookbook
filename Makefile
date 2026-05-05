@@ -25,10 +25,10 @@ run-update-all:
 		echo "==> Waiting for $$name to be healthy" ; \
 		(cd "$$dir" && while :; do \
 			sleep 5 ; \
-			count=$$(docker compose ps --format json 2>/dev/null | jq -s '[.[] | select(.State == "running" and (.Health == null or .Health == "healthy") or .State == "started") | length' 2>/dev/null || echo "0") ; \
+			count=$$(docker compose ps --format json 2>/dev/null | jq -s '[.[] | select(.Health == "unhealthy" or .Health == "error" or .Health == "starting")] | length' 2>/dev/null || echo "0") ; \
 			total=$$(docker compose ps --format json 2>/dev/null | jq -s 'length' 2>/dev/null || echo "0") ; \
-			if [ "$$count" -ge "$$total" ] && [ "$$total" -gt 0 ]; then break; fi ; \
-			echo "    Waiting... ($$count/$$total service(s) ready)" ; \
+			if [ "$$count" = "0" ] && [ "$$total" -gt 0 ]; then break; fi ; \
+			if [ "$$count" != "0" ]; then echo "    Waiting... ($$count service(s) not ready)" ; fi ; \
 		done) ; \
 		echo "==> $$name is healthy" ; \
 	done
