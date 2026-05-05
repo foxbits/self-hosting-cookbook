@@ -19,8 +19,8 @@ delete-volume:
 
 run:
 	docker compose down
-	docker compose up -d
 	$(MAKE) create-db
+	docker compose up -d
 
 run-update:
 	$(MAKE) build
