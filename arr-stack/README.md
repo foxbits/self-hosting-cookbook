@@ -29,13 +29,9 @@ The stack is configured to restart automatically, so on a machine restart, it al
 
 The setup uses the [`.env`](.env) file to define settings used in the docker compose. [`.env.default`](.env.default) can be used as example. Possible variables:
 - `TimeZone`: a valid timezone in ISO format
-- settings for each mount (at least 1) - to mount different hard-drives, let's say HDD number `n` you will have to add each of the three setup entries for it:
-   - `MEDIA_SOURCE_n`: defines the path where the data is stored on the host
-   - `MOVIES_MOUNT_n`: defines the path (relative to `/data/` directory) of the mounted folder for movies (Radarr)
-   - `TV_MOUNT_n`: same as previous, but for TV Shows (Sonarr)
-- `STACK_UID` and `STACK_GID`: define the IDs that will be used by plex for file ownership and should coincide with your own user; since by default a normal user has id/gid as `1000` the defaults should be ok, but run `id $USER` to find out your IDs and replace if necessary
-
-And then they have to be added in the `volumes` section in the [`docker-compose.yml`](docker-compose.yml) file for both `radarr` and `sonarr`. By default this setup has an example of adding two mounted drives.
+- `MOVIES_MEDIA_SOURCES`: comma-separated list of media sources for movies (Radarr) in the format `<local-folder>:<mounted-name>`, e.g. `/mnt/sda2/MULTIMEDIA:movies-e,/mnt/sda3/MULTIMEDIA:movies-f`. Each source is mounted as `<local-folder>:/data/<mounted-name>` in Radarr.
+- `SHOWS_MEDIA_SOURCES`: comma-separated list of media sources for TV shows (Sonarr) in the format `<local-folder>:<mounted-name>`, e.g. `/mnt/sda2/MULTIMEDIA:tv-e,/mnt/sda3/MULTIMEDIA:tv-f`. Each source is mounted as `<local-folder>:/data/<mounted-name>` in Sonarr.
+- `STACK_UID` and `STACK_GID`: define the IDs that will be used by the services for file ownership and should coincide with your own user; since by default a normal user has id/gid as `1000` the defaults should be ok, but run `id $USER` to find out your IDs and replace if necessary
 
 ### Important about mounted directories
 
@@ -106,4 +102,4 @@ Then, for Radarr:
 
 The [`config`](config) directory contains all of the configuration for the stack (created after first run). This is the folder you have to back-up / copy across installations, alongside, of course, your data folders.
 
-When adding a new storage to the setup, modify the `.env` and the `docker-compose.yml` and re-run.
+When adding a new storage to the setup, modify the `.env` and re-run.
