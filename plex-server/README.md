@@ -27,11 +27,8 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
   - this is not directly the 'Plex Media Server' folder that is usually backed up; the directory structure needs to be `/some/directory/Library/Application Support/Plex Media Server` and the `CONFIG_PATH` in this case would be `/some/directory` (details [here](https://github.com/plexinc/pms-docker?tab=readme-ov-file#config-directory) as well)
   - if you have data that needs to be migrated (see [this](https://support.plex.tv/articles/202915258-where-is-the-plex-media-server-data-directory-located/)), you need to put it in this folder in the same structure (e.g. put `Plex Media Server` directory in the right hierarchy)
 - `TRANSCODE_PATH`: the path where Plex will put the temporary transcode files (should be on a fast drive with plenty of space)
-- settings for each mount (at least 1) - to mount different hard-drives, let's say HDD number `n` you will have to add each of the three setup entries for it:
-   - `MEDIA_SOURCE_n`: defines the path where the data is stored on the host, it will be mounted under the same path inside the container
+- `MEDIA_SOURCES`: comma-separated list of media source paths (e.g. `/mnt/sda2/MULTIMEDIA,/mnt/sda3/MULTIMEDIA`). Each source is mounted as `<path>:<path>` inside the container.
 - `PLEX_UID` and `PLEX_GID`: define the IDs that will be used by plex for file ownership and should coincide with your own user; since by default a normal user has id/gid as `1000` the defaults should be ok, but run `id $USER` to find out your IDs and replace if necessary
-
-And then they have to be added in the `volumes` section in the [`docker-compose.yml`](docker-compose.yml). By default this setup has an example of adding two mounted drives.
 
 ## Running
 
