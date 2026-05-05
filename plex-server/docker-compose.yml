@@ -11,7 +11,5 @@ services:
     volumes:
       - ${CONFIG_PATH}:/config
       - ${TRANSCODE_PATH}:/transcode
-      - ${MEDIA_SOURCE_1}:${MEDIA_SOURCE_1}
-      - ${MEDIA_SOURCE_2}:${MEDIA_SOURCE_2}
     devices:
       - /dev/dri:/dev/dri  # Hardware transcoding (Intel/AMD GPU)

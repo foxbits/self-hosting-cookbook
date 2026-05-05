@@ -29,8 +29,6 @@ services:
       - TZ=${TimeZone}
     volumes:
       - ./config/radarr:/config
-      - ${MEDIA_SOURCE_1}:/data/${MOVIES_MOUNT_1}
-      - ${MEDIA_SOURCE_2}:/data/${MOVIES_MOUNT_2}
     depends_on:
       - jackett
     extra_hosts:
@@ -45,8 +43,6 @@ services:
       - TZ=${TimeZone}
     volumes:
       - ./config/sonarr:/config
-      - ${MEDIA_SOURCE_1}:/data/${TV_MOUNT_1}
-      - ${MEDIA_SOURCE_2}:/data/${TV_MOUNT_2}
     depends_on:
       - jackett
     extra_hosts:
