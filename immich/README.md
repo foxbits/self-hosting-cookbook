@@ -45,6 +45,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 2. This stack depends on a PostgreSQL database and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
 3. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared).
 4. The machine learning service uses OpenVINO for hardware acceleration on Intel CPUs. If you're using a different CPU architecture, you may need to change the image tag suffix (`-openvino`) to match your hardware (e.g., `-cuda` for NVIDIA GPUs, `-rocm` for AMD GPUs, `-armnn` for ARM).
+5. Hardware acceleration for transcoding is enabled by default using QuickSync. This can be disabled by removing or commenting out the `extends` section in the docker-compose.yml, or changed to another option (nvenc, rkmpp, vaapi, vaapi-wsl, cpu) by changing the service in the extends block.
 
 ### Starting the stack
 
