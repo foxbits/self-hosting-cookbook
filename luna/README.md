@@ -30,7 +30,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `DEFAULT_LOCALE`: default language locale (default: `en`)
 
 **LLM Providers:**
-- `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL (default: `https://router.requesty.ai/v1`)
+- `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL
 - `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
 
 **Model Configuration:**

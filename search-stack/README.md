@@ -47,7 +47,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ### GPT-Researcher Settings
 
-GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [requesty.ai](https://requesty.ai)). Configure the following variables:
+GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the following variables:
 
 - `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
 - `LANGUAGE`: The language to generate the response in
@@ -70,7 +70,7 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [requesty
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`).
 - `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
 - `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
-- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://router.requesty.ai/v1`)
+- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation
 - `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
 - `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
 
@@ -200,11 +200,11 @@ Image generation is optional and can use either Google Gemini API or an OpenAI-c
 1. Set `IMAGE_GENERATION_PROVIDER=google`
 2. Set `IMAGE_GENERATION_ENABLED=true`
 
-**OpenAI-compatible API (e.g., requesty.ai) (default):**
+**OpenAI-compatible API (default):**
 1. Set `IMAGE_GENERATION_PROVIDER=openai`
 2. Set `IMAGE_GENERATION_ENABLED=true`
 3. Provide `IMAGE_GENERATION_API_KEY` (or `OPENAI_API_KEY` as fallback)
-4. Provide `IMAGE_GENERATION_BASE_URL` (e.g., `https://router.requesty.ai/v1`)
+4. Provide `IMAGE_GENERATION_BASE_URL`
 5. Set `IMAGE_GENERATION_MODEL` to a model supported by your provider (e.g., `dall-e-3`)
 
 #### Scraper Configuration
