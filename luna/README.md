@@ -130,6 +130,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    2. For Searxng Query URL set `http://searxng:8080/search?q=<query>`
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
+   5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
 
 
 ### Back-up
