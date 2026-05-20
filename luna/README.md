@@ -8,6 +8,7 @@ This is the docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a
   - [Configure the stack](#configure-the-stack)
     - [For your user](#for-your-user)
     - [For the server](#for-the-server)
+    - [Configure Crawl4AI as web fetcher](#configure-crawl4ai-as-web-fetcher)
   - [Back-up](#back-up)
 
 
@@ -113,10 +114,10 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
 #### For your user
 1. Go to Settings -> Account and fill in your details.
 2. Go to Settings -> Personalization and enable Memory if you want the assistant to remember things about you.
-3. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only. Example system prompt (that manages memory, preferences):
+3. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only.
+4. (Optional) Configure a system prompt for memory management:
   ```
-  You are an AI assistant.
-
+  ## Memory System Rules
   You have access to the long-term memory storage for the user. You need to automatically save memories when the user clearly shares a durable fact about themselves, especially identity, preferences, dislikes, possessions, tools, habits, work, goals, or recurring constraints.
 
   Pay special attention to first-person patterns such as:
@@ -125,7 +126,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
   Only save memories that are likely to help in future conversations. Do not save temporary moods, one-off events, generic small talk, sensitive private data, or uncertain / hypothetical / sarcastic statements. Store memories as short, clear, atomic statements in third-person form. Avoid duplicates. Update old memories when newer explicit information replaces them. When unsure, do not save or ask the user.
   Always inform the user that a fact about them has been saved.
   ```
-4. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
+5. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
 
 
 #### For the server
@@ -146,7 +147,96 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
    5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
+   6. Enable "Bypass Web Loader" to bypass the default web fetcher
 
+#### Configure Crawl4AI as web fetcher
+1. Go to Settings - Admin - Settings - Integrations - Manage Tool Servers and add a new Server with the following parameters:
+   1. Name: Web Crawler
+   2. Description: Crawl4AI provides tools to scrape web pages content
+   3. URL: http://crawl4ai:11235
+   4. Function Name Filter List: get_markdown_md_post, generate_screenshot_screenshot_post, generate_pdf_pdf_post (only these are needed)
+2. Go to Settings -> Workspace - Skills and add a skill called **Web Crawling** (id: `web-crawling`) that will be used to connect this stack to crawl4ai that is used by default in [`search-stack`](../search-stack/):
+    ```
+    Mandatory strategy to use whenever fetching a web page:
+
+    1. Never use the `fetch_url` tool
+    2. If the user explicitly asks to wait for the page to fully load / render, use the tool `crawl_markdown`
+    3. Otherwise, the default approach is to use the tool `get_markdown_md_post` with mode/fit set to 'raw'
+    4. If the result of the web page fetch, after trying the tool `get_markdown_md_post`, is suspiciously empty, short, or clearly missing missing contents, then fall back to using `crawl_markdown`
+
+    Other tools and when to use them:
+    5. `crawl_crawl_post` - use when you need to: navigate through multiple pages, load and follow related links, or any multi-URL scrape
+    6. `generate_screenshot_screenshot_post` - use when the user explicitly asks for a screenshot, or when a visual snapshot of the page would be helpful
+    7. `generate_pdf_pdf_post` - use when the user explicitly asks for a PDF, or when a printable/archivable snapshot is needed
+    ```
+3. Go to Settings and modify the system prompt to be able to correctly use the web crawling tools:
+   ```
+    ## Web Crawler Rules
+    Never use any tool (get_markdown_md_post, fetch_url, etc.) to access a web page without FIRST calling view_skill("web-crawling") in the same turn. Loading the skill is mandatory before every web access.
+    ```
+4. Go to Settings -> Workspace - Tools and add a new Tool called "Web Crawler (Full)" that will be used as backup to fetch full website data when the default (which is faster but does not wait for javascript to be fully executed) does not work:
+    ```
+    import os
+    import json
+    import requests
+    from datetime import datetime
+    from pydantic import BaseModel, Field
+
+
+    class Tools:
+        class Valves(BaseModel):
+            CRAWL4AI_URL: str = Field(
+                default="http://crawl4ai:11235",
+                description="The base URL of the crawl4ai server",
+            )
+
+        def __init__(self):
+            self.valves = self.Valves()
+            pass
+
+        async def crawl_markdown(
+            self, urls: str, wait_for: str = "networkidle", page_timeout: int = 60000
+        ) -> str:
+            """
+            Used to fetch a web page and wait for its content to be fully loaded (e.g. JavaScript to be executed).
+            Uses a crawl4ai server and returns only the raw markdown for each URL.
+
+            Parameters:
+            - urls: Comma-separated list of URLs to crawl
+            - wait_for: Page load strategy (default: "networkidle" which waits for page to be fully loaded)
+            - page_timeout: Timeout in ms (default: 60000)
+            """
+            url_list = [u.strip() for u in urls.split(",")]
+
+            response = requests.post(
+                f"{self.valves.CRAWL4AI_URL}/crawl",
+                json={
+                    "urls": url_list,
+                    "crawler_config": {
+                        "wait_until": wait_for,
+                        "page_timeout": page_timeout,
+                    },
+                },
+                timeout=120,
+            )
+
+            data = response.json()
+            results = data.get("results", [])
+
+            # Extract only raw_markdown from each result
+            output = []
+            for r in results:
+                output.append(
+                    {
+                        "url": r.get("url"),
+                        "success": r.get("success"),
+                        "markdown": r.get("markdown", {}).get("raw_markdown", ""),
+                    }
+                )
+
+            return json.dumps(output, indent=2)
+    ```
+5. Go to your models and enable: the new toolset (Web Crawler), the optional tool (Web Crawler (Full)) and the new Skill (Web Crawling).
 
 ### Back-up
 
