@@ -8,6 +8,7 @@ This is the docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a
   - [Configure the stack](#configure-the-stack)
     - [For your user](#for-your-user)
     - [For the server](#for-the-server)
+    - [Configure Crawl4AI as web fetcher](#configure-crawl4ai-as-web-fetcher)
   - [Back-up](#back-up)
 
 
@@ -30,7 +31,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `DEFAULT_LOCALE`: default language locale (default: `en`)
 
 **LLM Providers:**
-- `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL (default: `https://nano-gpt.com/api/v1`)
+- `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL
 - `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
 
 **Model Configuration:**
@@ -114,23 +115,109 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
 1. Go to Settings -> Account and fill in your details.
 2. Go to Settings -> Personalization and enable Memory if you want the assistant to remember things about you.
 3. Go to Settings -> General and set your Theme, Enable Notifications and eventually add a system prompt for your account if you have one. You can also play with the Advanced Parameters section. This will affect your account only.
-4. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
+4. (Optional) Configure a system prompt for memory management:
+  ```
+  ## Memory System Rules
+  You have access to the long-term memory storage for the user. You need to automatically save memories when the user clearly shares a durable fact about themselves, especially identity, preferences, dislikes, possessions, tools, habits, work, goals, or recurring constraints.
+
+  Pay special attention to first-person patterns such as:
+  I am, I'm, I like, I love, I prefer, I enjoy, I dislike, I hate, I have, I own, I use, I work as, I live in, I usually, I often, I always, I never, I want, I plan to, I’m trying to, I need.
+
+  Only save memories that are likely to help in future conversations. Do not save temporary moods, one-off events, generic small talk, sensitive private data, or uncertain / hypothetical / sarcastic statements. Store memories as short, clear, atomic statements in third-person form. Avoid duplicates. Update old memories when newer explicit information replaces them. When unsure, do not save or ask the user.
+  Always inform the user that a fact about them has been saved.
+  ```
+5. Go to Settings -> Interface and set-up things like location access, title generation, chat background image, copy/paste settings and similar pretty things.
 
 
 #### For the server
 1. Go to Admin Panel -> Settings -> Models
    1. Go to the top „Settings” button and make sure that in the Model Params, Function Calling is set to Native.
    2. Disable all the models that you do not plan to use (if your provider offers many). 
-   3. You can also rename models from their defaults, add custom instructions for each of them if you want to, also enabling / disabling functionalities, and creating new models basedo on pre-existing LLMs. 
-   4. You can also add specific 'profile pictures' that will appear in chat next to your models. 
-   5. Make sure to also mark them as 'public' to not be visible only to the Admin user, if you plan to have other users using your instance.
-   6. Validate for all the models that you plan to use that Function Calling is set to Native.
+   3. It is recommended that you create "clones" of the models you want to use and set them up with the settings you want - e.g. custom instructions for each of them if you want to, also enabling / disabling functionalities, setting up parameters, custom names, images and description. And then pointing them as "base model" to the model from your provider - this way if you switch providers, you can always keep your models and just point them to different providers.
+   4. Make sure to also mark the models as 'public' to not be visible only to the Admin user, if you plan to have other users using your instance, and in the Admin interface set the models order and the pinned models.
+   5. Validate for all the models that you plan to use that Function Calling is set to Native.
+   6. You can set system prompts per model if you want to build specialized models. But for general system prompts on how all models behave, you should use the user-level prompt, which takes priority.
+   7. If you are planning to use DeepSeek models, use [this pipe](https://openwebui.com/posts/deepseek_v4_reasoning_content_fix_41c885fb) that enables you to do so (by default they break in OUI because they require the reasoning to be sent back to them), with the following notes:
+      1. Set Enable Thinking always to true, as the models do not have non-thinking mode (eventually set reasoning to zero)
+      2. Edit the pipe code to put the models id to match the IDs from your provider, otherwise it will not work
+      3. It does not require direct deepseek api access, you can use any provider, use the same url and api key you set in OUI config
 2. Go to Admin Panel - Settings -> WebSearch
    1. Enable it with engine as "searxng"
    2. For Searxng Query URL set `http://searxng:8080/search?q=<query>`
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
+   5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
 
+#### Configure Crawl4AI as web fetcher
+1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
+2. *[Optional]* Go to Settings -> Workspace - Tools and add a new Tool called *"Web Crawler (Advanced)"* with the description *"For fetching the content of one or more web pages at once.  Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch."*. This tool will be used as an additional tool for the AI agent to allow it to fetch multiple URLs at once (through the same engine) - slightly faster than one by one through the builtin `fetch_url`:
+    ```
+    import os
+    import json
+    import requests
+    from datetime import datetime
+    from pydantic import BaseModel, Field
+
+
+    class Tools:
+        class Valves(BaseModel):
+            CRAWL4AI_URL: str = Field(
+                default="http://crawl4ai:11235",
+                description="The base URL of the crawl4ai server",
+            )
+
+        def __init__(self):
+            self.valves = self.Valves()
+            pass
+
+        async def crawl_markdown(
+            self, urls: str, wait_for: str = "networkidle", page_timeout: int = 60000
+        ) -> str:
+            """
+            For fetching the content of one or more web pages at once.
+            Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch.
+            Also waits for pages to fully load (including JavaScript-rendered content) by default.
+            Use this over fetch_url when:
+                - You have 2+ URLs to retrieve (one call vs many)
+                - Pages rely on JavaScript to render content
+                - You need to wait for dynamic content to load
+
+            Parameters:
+            - urls: Comma-separated list of URLs to crawl
+            - wait_for: Page load strategy (default: "networkidle" which waits for page to be fully loaded)
+            - page_timeout: Timeout in ms (default: 60000)
+            """
+            url_list = [u.strip() for u in urls.split(",")]
+
+            response = requests.post(
+                f"{self.valves.CRAWL4AI_URL}/crawl",
+                json={
+                    "urls": url_list,
+                    "crawler_config": {
+                        "wait_until": wait_for,
+                        "page_timeout": page_timeout,
+                    },
+                },
+                timeout=120,
+            )
+
+            data = response.json()
+            results = data.get("results", [])
+
+            # Extract only raw_markdown from each result
+            output = []
+            for r in results:
+                output.append(
+                    {
+                        "url": r.get("url"),
+                        "success": r.get("success"),
+                        "markdown": r.get("markdown", {}).get("raw_markdown", ""),
+                    }
+                )
+
+            return json.dumps(output, indent=2)
+    ```
+3. Go to your models and enable: the optional tool (Web Crawler (Advanced)).
 
 ### Back-up
 

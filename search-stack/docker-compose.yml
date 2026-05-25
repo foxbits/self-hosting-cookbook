@@ -10,11 +10,6 @@ services:
     volumes:
       - ./searxng/core-config:/etc/searxng:rw
       - searxng-data:/var/cache/searxng
-    environment:
-      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://searxng:8080/}
-      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY}
-      - SEARXNG_REDIS_URL=redis://datastore-memory:6379/0
-      - FORCE_OWNERSHIP=true
     env_file:
       - .env
     cap_drop:
@@ -34,8 +29,6 @@ services:
     container_name: crawl4ai
     ports:
       - "9705:11235"
-    environment:
-      - MAX_CONCURRENT_TASKS=${MAX_CONCURRENT_TASKS:-10}
     env_file:
       - .env
     shm_size: '3g' # agents count x parallel tabs x 150MB
@@ -63,8 +56,6 @@ services:
       - home-lab-net
     ports:
       - "9708:8080"
-    environment:
-      - LOG_LEVEL=info
     env_file:
       - .env
     healthcheck:
@@ -83,32 +74,6 @@ services:
       - home-lab-net
     ports:
       - "9706:8000"
-    environment:
-      - LANGUAGE=${LANGUAGE}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
-      - RETRIEVER=searx
-      - SEARX_URL=http://searxng:8080
-      - SCRAPER=${SCRAPER:-crawl4ai}
-      - CRAWL4AI_API_URL=${CRAWL4AI_API_URL:-http://crawl4ai:11235}
-      - LOGGING_LEVEL=INFO
-      - IMAGE_GENERATION_ENABLED=${IMAGE_GENERATION_ENABLED}
-      - IMAGE_GENERATION_PROVIDER=${IMAGE_GENERATION_PROVIDER}
-      - IMAGE_GENERATION_API_KEY=${IMAGE_GENERATION_API_KEY}
-      - IMAGE_GENERATION_BASE_URL=${IMAGE_GENERATION_BASE_URL}
-      - IMAGE_GENERATION_MODEL=${IMAGE_GENERATION_MODEL}
-      - IMAGE_GENERATION_MAX_IMAGES=${IMAGE_GENERATION_MAX_IMAGES:-3}
-      - FAST_LLM=${FAST_LLM}
-      - SMART_LLM=${SMART_LLM}
-      - STRATEGIC_LLM=${STRATEGIC_LLM}
-      - EMBEDDING=${EMBEDDING}
-      - MAX_SEARCH_RESULTS_PER_QUERY=${MAX_SEARCH_RESULTS_PER_QUERY}
-      - MAX_ITERATIONS=${MAX_ITERATIONS}
-      - MAX_SUBTOPICS=${MAX_SUBTOPICS}
-      - DEEP_RESEARCH_BREADTH=${DEEP_RESEARCH_BREADTH}
-      - DEEP_RESEARCH_DEPTH=${DEEP_RESEARCH_DEPTH}
-      - DEEP_RESEARCH_CONCURRENCY=${DEEP_RESEARCH_CONCURRENCY}
-      - MIN_RAW_CONTENT_LENGTH=${MIN_RAW_CONTENT_LENGTH}
     volumes:
       - gpt-researcher-data:/usr/src/app/outputs:rw
     env_file:

@@ -47,7 +47,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 ### GPT-Researcher Settings
 
-GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt.com](https://nano-gpt.com)). Configure the following variables:
+GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the following variables:
 
 - `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
 - `LANGUAGE`: The language to generate the response in
@@ -70,7 +70,7 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`).
 - `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
 - `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
-- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation (e.g., `https://nano-gpt.com/api/v1`)
+- `IMAGE_GENERATION_BASE_URL`: Base URL for OpenAI-compatible image generation
 - `IMAGE_GENERATION_MODEL`: Model for image generation (Gemini model when `google`, DALL-E model when `openai`)
 - `IMAGE_GENERATION_MAX_IMAGES`: Maximum images per report (default: 3)
 
@@ -84,6 +84,7 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider (such as [nano-gpt
 3. On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
 4. For GPT Researcher, this stack (temporarily) uses a fork of it, to be able to use crawl4ai as engine (and some embeddings fixes), therefore you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and set the path to it through `GPT_RESEARCHER_PATH`.
 5. For Crawl4AI, this stach also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy on top of crawl4ai that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
+
 
 ### Starting the stack
 
@@ -200,11 +201,11 @@ Image generation is optional and can use either Google Gemini API or an OpenAI-c
 1. Set `IMAGE_GENERATION_PROVIDER=google`
 2. Set `IMAGE_GENERATION_ENABLED=true`
 
-**OpenAI-compatible API (e.g., nano-gpt.com) (default):**
+**OpenAI-compatible API (default):**
 1. Set `IMAGE_GENERATION_PROVIDER=openai`
 2. Set `IMAGE_GENERATION_ENABLED=true`
 3. Provide `IMAGE_GENERATION_API_KEY` (or `OPENAI_API_KEY` as fallback)
-4. Provide `IMAGE_GENERATION_BASE_URL` (e.g., `https://nano-gpt.com/api/v1/images/generations`)
+4. Provide `IMAGE_GENERATION_BASE_URL`
 5. Set `IMAGE_GENERATION_MODEL` to a model supported by your provider (e.g., `dall-e-3`)
 
 #### Scraper Configuration
