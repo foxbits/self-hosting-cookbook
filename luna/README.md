@@ -174,7 +174,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
     ## Web Crawler Rules
     Never use any tool (get_markdown_md_post, fetch_url, etc.) to access a web page without FIRST calling view_skill("web-crawling") in the same turn. Loading the skill is mandatory before every web access.
     ```
-4. Go to Settings -> Workspace - Tools and add a new Tool called "Web Crawler (Full)" that will be used as backup to fetch full website data when the default (which is faster but does not wait for javascript to be fully executed) does not work:
+4. Go to Settings -> Workspace - Tools and add a new Tool called "Web Crawler (Advanced)" that will be used as backup to fetch full website data when the default (which is faster but does not wait for javascript to be fully executed) does not work:
     ```
     import os
     import json
@@ -198,8 +198,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
             self, urls: str, wait_for: str = "networkidle", page_timeout: int = 60000
         ) -> str:
             """
-            Used to fetch a web page and wait for its content to be fully loaded (e.g. JavaScript to be executed).
-            Uses a crawl4ai server and returns only the raw markdown for each URL.
+            Used to fetch a list of web pages for their content, waiting for them to be fully loaded (e.g. all JavaScript to be executed).
 
             Parameters:
             - urls: Comma-separated list of URLs to crawl
