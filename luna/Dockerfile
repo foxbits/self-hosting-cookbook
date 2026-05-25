@@ -29,3 +29,4 @@ COPY static/web-app-manifest-192x192.png /app/backend/open_webui/static/web-app-
 COPY static/web-app-manifest-512x512.png /app/backend/open_webui/static/web-app-manifest-512x512.png
 
 RUN find /app -type f -exec sed -i 's/(Open WebUI)//g' {} +
+RUN find /app -type f -exec sed -i 's|https://api.tavily.com/|http://open-crawl:8080/|g' {} +
