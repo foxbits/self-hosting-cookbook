@@ -147,34 +147,10 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
    5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
-   6. Enable "Bypass Web Loader" to bypass the default web fetcher
 
 #### Configure Crawl4AI as web fetcher
-1. Go to Settings - Admin - Settings - Integrations - Manage Tool Servers and add a new Server with the following parameters:
-   1. Name: Web Crawler
-   2. Description: Crawl4AI provides tools to scrape web pages content
-   3. URL: http://crawl4ai:11235
-   4. Function Name Filter List: get_markdown_md_post, generate_screenshot_screenshot_post, generate_pdf_pdf_post (only these are needed)
-2. Go to Settings -> Workspace - Skills and add a skill called **Web Crawling** (id: `web-crawling`) that will be used to connect this stack to crawl4ai that is used by default in [`search-stack`](../search-stack/):
-    ```
-    Mandatory strategy to use whenever fetching a web page:
-
-    1. Never use the `fetch_url` tool
-    2. If the user explicitly asks to wait for the page to fully load / render, use the tool `crawl_markdown`
-    3. Otherwise, the default approach is to use the tool `get_markdown_md_post` with mode/fit set to 'raw'
-    4. If the result of the web page fetch, after trying the tool `get_markdown_md_post`, is suspiciously empty, short, or clearly missing missing contents, then fall back to using `crawl_markdown`
-
-    Other tools and when to use them:
-    5. `crawl_crawl_post` - use when you need to: navigate through multiple pages, load and follow related links, or any multi-URL scrape
-    6. `generate_screenshot_screenshot_post` - use when the user explicitly asks for a screenshot, or when a visual snapshot of the page would be helpful
-    7. `generate_pdf_pdf_post` - use when the user explicitly asks for a PDF, or when a printable/archivable snapshot is needed
-    ```
-3. Go to Settings and modify the system prompt to be able to correctly use the web crawling tools:
-   ```
-    ## Web Crawler Rules
-    Never use any tool (get_markdown_md_post, fetch_url, etc.) to access a web page without FIRST calling view_skill("web-crawling") in the same turn. Loading the skill is mandatory before every web access.
-    ```
-4. Go to Settings -> Workspace - Tools and add a new Tool called "Web Crawler (Advanced)" that will be used as backup to fetch full website data when the default (which is faster but does not wait for javascript to be fully executed) does not work:
+1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
+2. *[Optional]* Go to Settings -> Workspace - Tools and add a new Tool called *"Web Crawler (Advanced)"* with the description *"For fetching the content of one or more web pages at once.  Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch."*. This tool will be used as an additional tool for the AI agent to allow it to fetch multiple URLs at once (through the same engine) - slightly faster than one by one through the builtin `fetch_url`:
     ```
     import os
     import json
@@ -198,7 +174,13 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
             self, urls: str, wait_for: str = "networkidle", page_timeout: int = 60000
         ) -> str:
             """
-            Used to fetch a list of web pages for their content, waiting for them to be fully loaded (e.g. all JavaScript to be executed).
+            For fetching the content of one or more web pages at once.
+            Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch.
+            Also waits for pages to fully load (including JavaScript-rendered content) by default.
+            Use this over fetch_url when:
+                - You have 2+ URLs to retrieve (one call vs many)
+                - Pages rely on JavaScript to render content
+                - You need to wait for dynamic content to load
 
             Parameters:
             - urls: Comma-separated list of URLs to crawl
@@ -235,7 +217,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
 
             return json.dumps(output, indent=2)
     ```
-5. Go to your models and enable: the new toolset (Web Crawler), the optional tool (Web Crawler (Full)) and the new Skill (Web Crawling).
+3. Go to your models and enable: the optional tool (Web Crawler (Advanced)).
 
 ### Back-up
 
