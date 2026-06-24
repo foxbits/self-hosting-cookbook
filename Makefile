@@ -31,7 +31,9 @@ run-update-all:
 			if [ "$$count" != "0" ]; then echo "    Waiting... ($$count service(s) not ready)" ; fi ; \
 		done) ; \
 		echo "==> $$name is healthy" ; \
-	done
+	done ; \
+	echo "==> Running disk cleanup" ; \
+	$(MAKE) clean-disk
 
 create-network:
 	docker network create home-lab-net || true
