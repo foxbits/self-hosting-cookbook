@@ -147,77 +147,11 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
    5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
+3. Go to Admin Panel - Users - Groups
+   1. Enable "Open Sharing" if you want people to be able to share chats with a public link or "Public" if you want them to be able to share them with other users from the server only.
 
 #### Configure Crawl4AI as web fetcher
 1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
-2. *[Optional]* Go to Settings -> Workspace - Tools and add a new Tool called *"Web Crawler (Advanced)"* with the description *"For fetching the content of one or more web pages at once.  Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch."*. This tool will be used as an additional tool for the AI agent to allow it to fetch multiple URLs at once (through the same engine) - slightly faster than one by one through the builtin `fetch_url`:
-    ```
-    import os
-    import json
-    import requests
-    from datetime import datetime
-    from pydantic import BaseModel, Field
-
-
-    class Tools:
-        class Valves(BaseModel):
-            CRAWL4AI_URL: str = Field(
-                default="http://crawl4ai:11235",
-                description="The base URL of the crawl4ai server",
-            )
-
-        def __init__(self):
-            self.valves = self.Valves()
-            pass
-
-        async def crawl_markdown(
-            self, urls: str, wait_for: str = "networkidle", page_timeout: int = 60000
-        ) -> str:
-            """
-            For fetching the content of one or more web pages at once.
-            Accepts multiple URLs as a comma-separated list, making it more efficient than fetch_url when you have several URLs to fetch.
-            Also waits for pages to fully load (including JavaScript-rendered content) by default.
-            Use this over fetch_url when:
-                - You have 2+ URLs to retrieve (one call vs many)
-                - Pages rely on JavaScript to render content
-                - You need to wait for dynamic content to load
-
-            Parameters:
-            - urls: Comma-separated list of URLs to crawl
-            - wait_for: Page load strategy (default: "networkidle" which waits for page to be fully loaded)
-            - page_timeout: Timeout in ms (default: 60000)
-            """
-            url_list = [u.strip() for u in urls.split(",")]
-
-            response = requests.post(
-                f"{self.valves.CRAWL4AI_URL}/crawl",
-                json={
-                    "urls": url_list,
-                    "crawler_config": {
-                        "wait_until": wait_for,
-                        "page_timeout": page_timeout,
-                    },
-                },
-                timeout=120,
-            )
-
-            data = response.json()
-            results = data.get("results", [])
-
-            # Extract only raw_markdown from each result
-            output = []
-            for r in results:
-                output.append(
-                    {
-                        "url": r.get("url"),
-                        "success": r.get("success"),
-                        "markdown": r.get("markdown", {}).get("raw_markdown", ""),
-                    }
-                )
-
-            return json.dumps(output, indent=2)
-    ```
-3. Go to your models and enable: the optional tool (Web Crawler (Advanced)).
 
 ### Back-up
 
