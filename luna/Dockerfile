@@ -31,3 +31,6 @@ COPY static/web-app-manifest-512x512.png /app/backend/open_webui/static/web-app-
 RUN find /app -type f -exec sed -i 's/(Open WebUI)//g' {} +
 
 RUN find /app -type f -exec sed -i 's|https://api.tavily.com/|http://open-crawl:8080/|g' {} +
+
+RUN sed -i 's/        api_base_url: str,/        api_base_url: str = "",/' /app/backend/open_webui/retrieval/web/utils.py \
+ && sed -i 's/        api_key: str,/        api_key: str = "",/' /app/backend/open_webui/retrieval/web/utils.py
