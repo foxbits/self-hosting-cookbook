@@ -5,8 +5,8 @@ pull:
 	docker compose pull
 
 init-storage:
-	@CFG=$$(grep -E '^OC_CONFIG_DIR=' .env | cut -d'=' -f2) ; \
-	DAT=$$(grep -E '^OC_DATA_DIR=' .env | cut -d'=' -f2) ; \
+	@CFG=$$(grep -E '^SH_OC_CONFIG_DIR=' .env | cut -d'=' -f2) ; \
+	DAT=$$(grep -E '^SH_OC_DATA_DIR=' .env | cut -d'=' -f2) ; \
 	for d in "$$CFG" "$$DAT"; do \
 		[ -d "$$d" ] || sudo mkdir -p "$$d" ; \
 		[ "$$(stat -c '%u:%g' "$$d")" = "1000:1000" ] || sudo chown 1000:1000 "$$d" ; \

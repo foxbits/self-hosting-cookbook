@@ -39,9 +39,9 @@ services:
       - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml
       - ./config/opencloud/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
       - ./config/euro-office/app-registry.yaml:/etc/opencloud/app-registry.yaml
-      - ${OC_CONFIG_DIR}:/etc/opencloud
-      - ${OC_DATA_DIR}:/var/lib/opencloud
-      - ${OC_APPS_DIR}:/var/lib/opencloud/web/assets/apps
+      - ${SH_OC_CONFIG_DIR}:/etc/opencloud
+      - ${SH_OC_DATA_DIR}:/var/lib/opencloud
+      - ${SH_OC_APPS_DIR}:/var/lib/opencloud/web/assets/apps
     logging:
       driver: ${LOG_DRIVER}
 
