@@ -120,7 +120,7 @@ OIDC discovery takes the **issuer URL** and appends `/.well-known/openid-configu
 OC_OIDC_ISSUER=https://auth.example.com/<tenant-id>
 ```
 
-Then in **FusionAuth → Tenants → your tenant → JWT Settings**, make sure the **Issuer** field equals `OC_OIDC_ISSUER` exactly. The `iss` claim in issued tokens must match `OC_OIDC_ISSUER`, or token validation fails. This is, usually, by default OK.
+Then in **FusionAuth → Tenants → your tenant → JWT Settings**, make sure the **Issuer** field equals `OC_OIDC_ISSUER` **exactly** — including the `https://` scheme and the tenant-id path (e.g. `https://auth.example.com/<tenant-id>`). The `iss` claim in issued tokens and the `issuer` field in the well-known config must both match `OC_OIDC_ISSUER`, or token validation fails. **This is NOT correct by default** — FusionAuth's default issuer is the bare hostname (e.g. `auth.example.com` without scheme or tenant path), which OpenCloud will reject with `issuer did not match the issuer returned by provider`. Verify by opening `https://auth.example.com/<tenant-id>/.well-known/openid-configuration` and checking the `issuer` field.
 
 The OAuth endpoints (`/oauth2/authorize`, `/oauth2/token`, `/oauth2/logout`, `/oauth2/userinfo`) are **root-level** (no tenant ID in the path) — the tenant is resolved from the `client_id`, which belongs to an application, which belongs to a tenant. OpenCloud discovers these automatically from the well-known config, so you do not set them individually.
 
@@ -129,6 +129,18 @@ The OAuth endpoints (`/oauth2/authorize`, `/oauth2/token`, `/oauth2/logout`, `/o
 ```bash
 WEB_OPTION_LOGOUT_URL=https://auth.example.com/oauth2/logout
 ```
+
+**Enable CORS in FusionAuth (required).** OpenCloud's web client is a browser SPA on a different origin (`https://OC_DOMAIN`) than the IdP, so it fetches the well-known config and token/userinfo endpoints cross-origin. FusionAuth's CORS filter is **disabled by default**, which blocks these requests (`Access-Control-Allow-Origin` missing). Enable it in **Settings → System → CORS**:
+
+| Setting | Value |
+|---|---|
+| **Enable CORS** | ✅ on |
+| **Allowed origins** | `https://cloud.example.com` (your `OC_DOMAIN`; add `http://localhost:9863` for local testing) |
+| **Allowed methods** | `GET`, `POST`, `OPTIONS` |
+| **Allowed headers** | `Content-Type`, `Accept`, `Authorization` |
+| **Include credentials in CORS requests** | ✅ on |
+
+CORS in FusionAuth is a **system-wide** setting (not per-application or per-tenant). Additionally, on the FusionAuth **Application → OAuth tab**, set **Authorized request origin URLs** to the same `https://cloud.example.com` — this is a separate control that gates the hosted login page origin check (distinct from the ACAO filter, but both are needed for a browser PKCE client).
 
 ### 2. Disable OpenCloud's built-in IdP
 
@@ -189,12 +201,11 @@ Each application needs its authorized redirect URI(s). The mobile/desktop client
 
 | Client | Client ID | Authorized redirect URL(s) | URL validation |
 |---|---|---|---|
-| **Web** | *(your web client ID)* | `https://cloud.example.com/` (i.e. `https://OC_DOMAIN/`) | Exact match |
+| **Web** | *(your web client ID)* | `https://cloud.example.com/*` | **Allow wildcards** |
 | **Desktop** | `OpenCloudDesktop` | `http://127.0.0.1:*` and `http://localhost:*` | **Allow wildcards** |
 | **Android** | `OpenCloudAndroid` | `oc://android.opencloud.eu` | Exact match |
 | **iOS** | `OpenCloudIOS` | `oc://ios.opencloud.eu` | Exact match |
 
-The web client handles the OIDC callback at its root URL, so the redirect URI is your `OC_DOMAIN` with a trailing slash.
 
 The desktop app spins up a temporary local HTTP server on a **random port** to receive the callback, so the runtime URI is e.g. `http://localhost:54321/`. To accept this, set **URL validation** to **Allow wildcards** (FusionAuth v1.43.0+) on the `OpenCloudDesktop` application and add `http://127.0.0.1:*` + `http://localhost:*` (the `*` matches the port).
 
