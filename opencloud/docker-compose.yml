@@ -1,7 +1,7 @@
-# OpenCloud + Euro Office (external-proxy, built-in LDAP) — adapted to self-hosting-cookbook conventions.
-# Derived from opencloud-eu/opencloud-compose: external-proxy/opencloud.yml + weboffice/euro-office.yml
-# + external-proxy/euro-office.yml, consolidated into one file. No bundled Traefik; front with your
-# existing reverse proxy (Caddy/Nginx/cloudflared) terminating TLS for OC_DOMAIN and EURO_OFFICE_DOMAIN.
+# OpenCloud (external-proxy, external OIDC IdP) — adapted to self-hosting-cookbook conventions.
+# Derived from opencloud-eu/opencloud-compose: docker-compose.yml + external-proxy/opencloud.yml.
+# File-storage only (no document editor). No bundled Traefik; front with your existing reverse
+# proxy (Caddy/Nginx/cloudflared) terminating TLS for OC_DOMAIN.
 services:
   opencloud:
     image: ${OC_DOCKER_IMAGE}:${OC_DOCKER_TAG}
@@ -19,53 +19,22 @@ services:
     environment:
       # --- Derived/computed values (interpolate from .env; analogous to DATABASE_URL in immich) ---
       OC_URL: https://${OC_DOMAIN}
-      OC_ADD_RUN_SERVICES: ${START_ADDITIONAL_SERVICES:-}${START_ADDITIONAL_SERVICES:+,}collaboration
-      COLLABORATION_WOPI_SRC: https://${OC_DOMAIN}
-      COLLABORATION_APP_ADDR: https://${EURO_OFFICE_DOMAIN}
-      COLLABORATION_APP_ICON: https://${EURO_OFFICE_DOMAIN}/web-apps/apps/documenteditor/main/resources/img/favicon.ico
-      COLLABORATION_APP_INSECURE: ${OC_INSECURE}
-      COLLABORATION_CS3API_DATAGATEWAY_INSECURE: ${OC_INSECURE}
+      OC_ADD_RUN_SERVICES: ${START_ADDITIONAL_SERVICES:-}
       # --- Fixed configuration constants (not user-configurable; like fusionauth's SEARCH_TYPE) ---
       PROXY_TLS: "false"
       PROXY_HTTP_ADDR: "0.0.0.0:9200"
       PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
       FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
       OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
-      COLLABORATION_APP_NAME: "Euro-Office"
-      COLLABORATION_APP_PRODUCT: "OnlyOffice"
-      COLLABORATION_APP_PROOF_DISABLE: "true"
     volumes:
       - ./config/opencloud/csp.yaml:/etc/opencloud/csp.yaml
       - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml
       - ./config/opencloud/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
-      - ./config/euro-office/app-registry.yaml:/etc/opencloud/app-registry.yaml
       - ${SH_OC_CONFIG_DIR}:/etc/opencloud
       - ${SH_OC_DATA_DIR}:/var/lib/opencloud
       - ${SH_OC_APPS_DIR}:/var/lib/opencloud/web/assets/apps
     logging:
       driver: ${LOG_DRIVER}
-
-  euro-office:
-    image: ${EURO_OFFICE_DOCKER_IMAGE}:${EURO_OFFICE_DOCKER_TAG}
-    container_name: opencloud-office
-    restart: unless-stopped
-    networks:
-      - home-lab-net
-    ports:
-      - "127.0.0.1:9864:80"
-    environment:
-      WOPI_ENABLED: "true"
-      USE_UNAUTHORIZED_STORAGE: ${OC_INSECURE:-false}
-    volumes:
-      - /usr/share/fonts/truetype:/usr/share/fonts/truetype/more:ro
-    logging:
-      driver: ${LOG_DRIVER}
-    healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/80 && printf 'GET /hosting/discovery HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | head -1 | grep -q '200 OK'"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
 
 networks:
   home-lab-net:

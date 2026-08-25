@@ -1,4 +1,4 @@
-This is the docker compose setup for [OpenCloud](https://opencloud.eu) (with [Euro Office](https://github.com/EURO-office/DocumentServer) document editing) — a self-hosted, GDPR-friendly file sync, share and collaboration platform that serves as a Nextcloud replacement.
+This is the docker compose setup for [OpenCloud](https://opencloud.eu) — a self-hosted, GDPR-friendly file sync and share platform that serves as a Nextcloud replacement (file storage only; no bundled document editor).
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -23,20 +23,18 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 ## Understanding the setup
 
 The setup starts the following services:
-- [OpenCloud](https://opencloud.eu) (files/sharing + collaboration) at port `9863` — can be accessed in browser at [http://localhost:9863](http://localhost:9863). The upstream image bundles the file server, sharing, collaboration (WOPI endpoint under `/wopi` and `/collaboration`). **This stack disables the built-in IdP by default** and expects you to delegate authentication to an **external OIDC provider** — the default/recommended one being the [`fusionauth`](../fusionauth/) stack in this repo. Users are auto-provisioned from the IdP on first login; see [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp).
-- [Euro Office](https://github.com/EURO-office/DocumentServer) (document editor for `.docx`/`.xlsx`/`.pptx`/`.odt`/`.ods`/`.odp`) at port `9864` — reachable at [http://localhost:9864](http://localhost:9864). Romanian (`ro_RO`) + English (`en_US`/`en_GB`/`en_AU`/`en_CA`/`en_ZA`) dictionaries are baked into the image; the editor UI follows the browser locale.
+- [OpenCloud](https://opencloud.eu) (files/sharing) at port `9863` — can be accessed in browser at [http://localhost:9863](http://localhost:9863). The upstream image bundles the file server, sharing, and a built-in in-process LDAP IdP. **This stack disables the built-in IdP by default** (`OC_EXCLUDE_RUN_SERVICES=idp`) and expects you to delegate authentication to an **external OIDC provider** — the default/recommended one being the [`fusionauth`](../fusionauth/) stack in this repo. Users are auto-provisioned from the IdP on first login; see [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp).
 
-Both services are bound to **`127.0.0.1` only** — a reverse proxy is required to expose them under `https://OC_DOMAIN` and `https://EURO_OFFICE_DOMAIN`.
+The service is bound to **`127.0.0.1` only** — a reverse proxy is required to expose it under `https://OC_DOMAIN`.
 
 The stack is configured to restart automatically, so on a machine restart, it always starts back automatically (assuming docker service also always starts automatically).
 
 ### Environment variables
 
-The setup uses the [`.env`](.env) file to define settings used in docker compose. [`.env.default`](.env.default) can be used as an example. All variables use their **container-native names** (what the opencloud/euro-office images actually read) and are loaded via `env_file`. Notable variables:
+The setup uses the [`.env`](.env) file to define settings used in docker compose. [`.env.default`](.env.default) can be used as an example. All variables use their **container-native names** (what the opencloud image actually reads) and are loaded via `env_file`. Notable variables:
 
 **Domains:**
 - `OC_DOMAIN` — publicly-served hostname for OpenCloud (e.g. `cloud.example.com`); TLS terminated at the reverse proxy.
-- `EURO_OFFICE_DOMAIN` — publicly-served hostname for the Euro Office editor (e.g. `euro-office.example.com`).
 
 **Identity (built-in LDAP — disabled by default):**
 
@@ -77,14 +75,13 @@ WebFinger (optional — needed for desktop/mobile clients, so most likely needed
 - `WEBFINGER_DESKTOP_OIDC_CLIENT_ID`, `WEBFINGER_ANDROID_OIDC_CLIENT_ID`, `WEBFINGER_IOS_OIDC_CLIENT_ID`.
 
 **TLS / networking:**
-- `OC_INSECURE` — `true` skips certificate validation toward Euro Office and the public URL (use when behind a self-signed / local reverse proxy); `false` validates certificates (use behind a trusted proxy).
+- `OC_INSECURE` — `true` skips certificate validation toward the public URL (use when behind a self-signed / local reverse proxy); `false` validates certificates (use behind a trusted proxy).
 
 **Localization:**
 - `OC_DEFAULT_LANGUAGE` — default Web UI language (`ro` for Romanian, community-translated; `en` for English, fully maintained). Users can switch individually.
 
 **Image:**
 - `OC_DOCKER_IMAGE` / `OC_DOCKER_TAG` — defaults to `opencloudeu/opencloud-rolling:latest`. For production, pin to `opencloudeu/opencloud:<stable-tag>`.
-- `EURO_OFFICE_DOCKER_IMAGE` / `EURO_OFFICE_DOCKER_TAG` — defaults to `ghcr.io/euro-office/documentserver:latest`.
 
 **Storage (bind mounts — must exist and be owned `1000:1000`):**
 - `SH_OC_CONFIG_DIR` — host path for the config dir (`/etc/opencloud` in the container; default `/mnt/sda4/opencloud/config`). Prefixed `SH_OC_*` so the opencloud container (which reads `OC_CONFIG_DIR` natively) does not pick the host path up and try to `mkdir` it inside the container.
@@ -92,7 +89,7 @@ WebFinger (optional — needed for desktop/mobile clients, so most likely needed
 - `SH_OC_APPS_DIR` — host path for web app assets (committed `./config/opencloud/apps`).
 
 **Optional services / logging:**
-- `START_ADDITIONAL_SERVICES` — comma-separated additional services (e.g. `notifications,antivirus`); `collaboration` is always started.
+- `START_ADDITIONAL_SERVICES` — comma-separated additional services (e.g. `notifications,antivirus`).
 - `OC_LOG_LEVEL`, `OC_LOG_PRETTY`, `OC_LOG_COLOR`, `LOG_DRIVER` — logging.
 
 **Sharing:**
@@ -273,14 +270,14 @@ User logs in via FusionAuth
 
 1. The stack runs on the docker network `home-lab-net`. To create it, run `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 2. You need `docker` and `docker compose` installed on the host machine.
-3. **A reverse proxy is mandatory** — the stack binds only to `127.0.0.1`. Point `https://OC_DOMAIN` → `127.0.0.1:9863` and `https://EURO_OFFICE_DOMAIN` → `127.0.0.1:9864`, with TLS terminated at the proxy. For the OpenCloud domain, also forward the WOPI paths `/wopi` and `/collaboration` (euro-office uses these URLs when opening documents).
+3. **A reverse proxy is mandatory** — the stack binds only to `127.0.0.1`. Point `https://OC_DOMAIN` → `127.0.0.1:9863`, with TLS terminated at the proxy.
 4. **An external OIDC provider is required** (the built-in IdP is disabled by default). The reference setup is the [`fusionauth`](../fusionauth/) stack — stand it up first, then configure it as described in [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp).
-5. Copy `.env.default` to `.env` and set at minimum `OC_DOMAIN`, `EURO_OFFICE_DOMAIN`, `OC_OIDC_ISSUER`, `OC_OIDC_CLIENT_ID` (and the FusionAuth application/client setup matching those values).
+5. Copy `.env.default` to `.env` and set at minimum `OC_DOMAIN`, `OC_OIDC_ISSUER`, `OC_OIDC_CLIENT_ID`, `IDP_DOMAIN` (and the FusionAuth application/client setup matching those values).
 6. Run `make init-storage` once — it creates `/mnt/sda4/opencloud/{config,data}` (change `SH_OC_CONFIG_DIR`/`SH_OC_DATA_DIR` to match your layout) and chowns them to `1000:1000` so the opencloud container can write to them.
 
 ### Starting the stack
 
-- `make pull` — pulls the OpenCloud + Euro Office images.
+- `make pull` — pulls the OpenCloud image.
 - `make init-storage` — creates the bind-mount dirs and chowns them to `1000:1000` (one-time, idempotent).
 - `make run` — runs `init-storage`, then `docker compose down && docker compose up -d`.
 - `make run-update` — `make pull` followed by `make run`.
@@ -290,25 +287,19 @@ After `make run`, reach OpenCloud at `https://OC_DOMAIN` through your reverse pr
 ### Configure the stack
 
 1. **Authentication** is delegated to your external IdP — complete [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp) (tenant issuer, public+PKCE application, redirect URIs, roles). First login auto-provisions your user; assign `opencloudAdmin` in FusionAuth to become admin. If you instead run the built-in IdP, log in as `admin` and **change the admin password via the OpenCloud UI** (Settings → profile) — the env value is ignored after the first start.
-2. Open a `.docx` / `.xlsx` / `.pptx` from OpenCloud — it should open in the Euro Office editor. Romanian or English spellcheck is available out of the box (dictionaries baked into the image); the editor UI follows the browser locale.
-3. **(Optional) Pin the Euro Office JWT secret** for hardening. By default the image auto-generates and manages its own `JWT_SECRET` (matching upstream's `weboffice/euro-office.yml`). To pin a known secret:
-   1. `openssl rand -hex 32` → put the value in `.env.default`/`env` as `EURO_OFFICE_JWT_SECRET=…` and uncomment the line.
-   2. In `docker-compose.yml`, add `JWT_SECRET: ${EURO_OFFICE_JWT_SECRET}` under the `euro-office` service's `environment:` block.
-   3. Re-run `make run-update` and **re-verify document editing**, because the WOPI proof key changes. If editing breaks, revert the env change.
-4. **(Optional) Outgoing email (notifications).** Fill `NOTIFICATIONS_SMTP_*` vars and add `notifications` to `START_ADDITIONAL_SERVICES`, then `make run-update`.
+2. **(Optional) Outgoing email (notifications).** Fill `NOTIFICATIONS_SMTP_*` vars and add `notifications` to `START_ADDITIONAL_SERVICES`, then `make run-update`.
 
 ### Back-up
 
-The bind mounts `/mnt/sda4/opencloud/config` and `/mnt/sda4/opencloud/data` hold all persistent state (database, blob storage, config files written at first start). Back these up. Also keep a copy of `.env` so the OIDC issuer/client config and SMTP credentials can be restored — and back up your FusionAuth instance (see [`fusionauth`](../fusionauth/) → Back-up), since it holds all user accounts and roles.
+OpenCloud does **not** use a database — all state is persisted in the filesystem. The bind mounts `/mnt/sda4/opencloud/config` (`SH_OC_CONFIG_DIR`, `/etc/opencloud` in the container — secrets, `jwt_secret`, signing keys) and `/mnt/sda4/opencloud/data` (`SH_OC_DATA_DIR`, `/var/lib/opencloud` — file content + xattr metadata via the default PosixFS driver, plus embedded NATS JetStream under `nats/`, the bleve search index under `search/`, and thumbnails under `thumbnails/`) hold all persistent state. Back these up. Also keep a copy of `.env` so the OIDC issuer/client config and SMTP credentials can be restored — and back up your FusionAuth instance (see [`fusionauth`](../fusionauth/) → Back-up), since it holds all user accounts and roles.
 
 ### Security
 
-- **127.0.0.1-only ports**: `9863` and `9864` are NOT reachable from other hosts. Use a reverse proxy for HTTPS and consider fail2ban / IP allowlists at the proxy.
+- **127.0.0.1-only port**: `9863` is NOT reachable from other hosts. Use a reverse proxy for HTTPS and consider fail2ban / IP allowlists at the proxy.
 - **Authentication is external**: with the default `OC_EXCLUDE_RUN_SERVICES=idp`, no built-in `admin` user exists — every account comes from your OIDC provider. The security of OpenCloud logins is therefore the security of your FusionAuth (or other IdP) tenant: enforce MFA, strong password policy, and email verification there. Keep `PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD=jwt` so tokens are validated locally against the IdP's JWKS rather than trusted blindly.
 - **Role gating**: when `PROXY_ROLE_ASSIGNMENT_DRIVER=oidc` + `GRAPH_ASSIGN_DEFAULT_USER_ROLE=false` are set, users whose `roles` claim matches **no** mapping are denied login. Make sure every intended user has at least `opencloudUser` assigned in FusionAuth.
 - **`IDM_ADMIN_PASSWORD`** (only if you run the built-in IdP): must be a strong, unique value set BEFORE first start; change it via the UI immediately after first log-in (the env value is no longer applied after first boot).
-- **`OC_INSECURE=true`**: disables certificate validation toward Euro Office and within OpenCloud. Use `false` in production (trusted proxy with valid certs); use `true` only for dev / self-signed local setups.
-- **Euro Office is community / early-stage** — the upstream docs flag it as such. Track [opencloud-eu/opencloud-compose](https://github.com/opencloud-eu/opencloud-compose) for updates.
+- **`OC_INSECURE=true`**: disables certificate validation within OpenCloud. Use `false` in production (trusted proxy with valid certs); use `true` only for dev / self-signed local setups.
 - **GDPR**: OpenCloud is on-prem, EU-based; data does not leave your host.
 
 ### Migrating from Nextcloud AIO
