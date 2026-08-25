@@ -49,6 +49,7 @@ The built-in in-process LDAP IdP is excluded by default via `OC_EXCLUDE_RUN_SERV
 This stack is wired to delegate auth to an external OIDC provider. The [`fusionauth`](../fusionauth/) stack in this repo is the default/reference setup; any spec-compliant OIDC provider works. See [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp) for the full end-to-end configuration.
 
 - `OC_OIDC_ISSUER` — the **full tenant-scoped issuer URL** of your IdP. OIDC discovery appends `/.well-known/openid-configuration` to this. For FusionAuth this MUST include the tenant ID (e.g. `https://auth.example.com/<tenant-id>`). The `iss` claim in issued tokens must match this exactly.
+- `IDP_DOMAIN` — the IdP base **host** (e.g. `auth.example.com`). Must match the host of `OC_OIDC_ISSUER`.
 - `OC_OIDC_CLIENT_ID` — the OIDC client ID OpenCloud presents (the FusionAuth application's client ID).
 - `OC_EXCLUDE_RUN_SERVICES` — services to exclude from startup; defaults to `idp` (disables the built-in IdP in favor of the external OIDC provider). Remove `idp` here only if you want the built-in LDAP instead.
 
