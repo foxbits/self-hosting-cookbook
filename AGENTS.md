@@ -7,6 +7,28 @@ conventions. Read this, then the upstream docs for the service you are deploying
 
 When asked to "add a new service/stack", follow the checklist at the bottom of this file.
 
+## Development environment
+
+This repository is a **code-only** workspace. It does **not** have Docker or any container
+runtime installed, and no service is ever executed here — stacks are not deployed, started, or
+debugged in this environment. The `.env.default` files committed to this repo are examples
+(`.env.default`/`.env.example`-style placeholders with `CHANGE_ME` values and inline comments);
+they are **never** used to run anything locally.
+
+The actual deployment lives on a separate host that has Docker and `docker compose` installed.
+That host copies a service's `.env.default` to `.env`, fills in real secrets/values, and runs
+`make run-update` from inside that service's directory. So:
+
+- Do **not** try to run `docker compose config`, `docker compose up`, `make run`, etc. in this
+  repo — none of those commands work here. Treat the validation checklist's `docker compose
+  config` step as a *recommendation to run on the deployment host*, not something to execute in
+  this workspace.
+- Do **not** assume `.env` files exist or are usable in this workspace; only `.env.default` is
+  guaranteed to be present and safe to read.
+- Any verification you can do here is limited to static checks: file layout, YAML syntax,
+  referenced paths/ports, alignment with this file's conventions, and consistency between the
+  service files and the root-level metadata.
+
 ## Repository layout
 
 ```
