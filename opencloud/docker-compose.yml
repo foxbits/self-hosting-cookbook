@@ -26,12 +26,16 @@ services:
       PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
       FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
       OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
+      # --- Theming (defaults match the upstream)
+      WEB_ASSET_THEMES_PATH: /var/lib/opencloud/web/assets/themes
+      WEB_UI_THEME_PATH: /themes/opencloud/theme.json
     volumes:
       - ./config/opencloud/csp.yaml:/etc/opencloud/csp.yaml
       - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml
       - ./config/opencloud/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
       - ${SH_OC_CONFIG_DIR}:/etc/opencloud
       - ${SH_OC_DATA_DIR}:/var/lib/opencloud
+      - ./config/opencloud/themes:/var/lib/opencloud/web/assets/themes
       - ${SH_OC_APPS_DIR}:/var/lib/opencloud/web/assets/apps
     logging:
       driver: ${LOG_DRIVER}

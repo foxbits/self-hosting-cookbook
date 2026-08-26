@@ -4,6 +4,7 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 
 - [Understanding the setup](#understanding-the-setup)
   - [Environment variables](#environment-variables)
+- [Branding \& theming (🦊⛅)](#branding--theming-)
 - [Setting up FusionAuth as the external IdP](#setting-up-fusionauth-as-the-external-idp)
   - [1. Tenant and issuer URL](#1-tenant-and-issuer-url)
   - [2. Disable OpenCloud's built-in IdP](#2-disable-openclouds-built-in-idp)
@@ -103,6 +104,38 @@ OIDC scopes (refresh tokens for the browser):
 
 **Optional SMTP (notifications service):**
 - `NOTIFICATIONS_SMTP_HOST`, `NOTIFICATIONS_SMTP_PORT`, `NOTIFICATIONS_SMTP_SENDER`, `NOTIFICATIONS_SMTP_USERNAME`, `NOTIFICATIONS_SMTP_PASSWORD`, `NOTIFICATIONS_SMTP_AUTHENTICATION`, `NOTIFICATIONS_SMTP_ENCRYPTION`, `NOTIFICATIONS_SMTP_INSECURE` — leave blank to disable; add `notifications` to `START_ADDITIONAL_SERVICES` to enable.
+
+
+## Branding & theming (🦊⛅)
+
+This stack ships a custom **`🦊⛅` royal-blue theme** for the OpenCloud web UI via OpenCloud's **official theming mechanism** ([docs](https://docs.opencloud.eu/docs/dev/server/services/web/information#loading-themes)) — no overlay, no custom CSS.
+
+**Where it lives:**
+```
+config/opencloud/themes/opencloud/
+├── theme.json          # the theme definition (brand, slogan, M3 color roles, file-icon palette)
+└── assets/
+    ├── logo.svg              # topbar logo (rectangular)
+    ├── favicon.svg           # browser tab icon
+    └── loginBackground.svg   # login-page background image
+```
+
+**How it works.** The web service serves themes from the filesystem root set by env `WEB_ASSET_THEMES_PATH` (default `/var/lib/opencloud/web/assets/themes`), and the browser loads the active theme from `<OC_URL>` + `WEB_UI_THEME_PATH` (default `/themes/opencloud/theme.json`). The docker-compose.yml bind-mounts `./config/opencloud/themes` into the container at `/var/lib/opencloud/web/assets/themes` (shadowing the same subtree under the `${SH_OC_DATA_DIR}` mount), and pins both env vars to their defaults so the theme is picked up without any `.env` change.
+
+`theme.json` defines both a **Light Theme** and a **Dark Theme** (users can switch), both anchored on royal blue (`#4169E1`) for primary accents and `#1B2A4E` deep navy for the topbar chrome. The full Material-3 `designTokens.roles` set is included; the existing CSP (`config/opencloud/csp.yaml`) already allows `'self'` for `img-src`/`style-src`/`connect-src`/`font-src`, so no CSP change is needed.
+
+**Replacing the placeholder logos.** The shipped SVG assets are intentionally simple placeholders. To use your own:
+- **Topbar logo** (the rectangular one in the top-left): replace `config/opencloud/themes/opencloud/assets/logo.svg`.
+- **Favicon** (browser tab): replace `config/opencloud/themes/opencloud/assets/favicon.svg`.
+- **Login background** (subtle royal-blue gradient): replace `config/opencloud/themes/opencloud/assets/loginBackground.svg`. Remove the `loginPage.backgroundImg` key from `theme.json` to fall back to none.
+
+Keep the filenames unchanged so `theme.json` doesn't need editing, then `make run-update` to restart the web service (themes are loaded at startup).
+
+**Adjusting colors / labels.** Edit `config/opencloud/themes/opencloud/theme.json` directly. Each theme entry uses `designTokens.roles` (the M3 color roles format OpenCloud rolling expects — older `swatch-*` colorPalette forms are not used here). Use `"label"` (not `"name"`) for theme entries — that's what rolling reads. Mandatory keys like `common.shareRoles` are included explicitly.
+
+**Theming env vars (advanced).** Both are pinned in `docker-compose.yml` and the defaults are correct:
+- `WEB_ASSET_THEMES_PATH` (default `/var/lib/opencloud/web/assets/themes`) — bind-mounted to `config/opencloud/themes/`.
+- `WEB_UI_THEME_PATH` (default `/themes/opencloud/theme.json`) — URL path the browser fetches.
 
 
 ## Setting up FusionAuth as the external IdP

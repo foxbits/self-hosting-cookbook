@@ -1,0 +1,240 @@
+{
+  "common": {
+    "name": "🦊⛅",
+    "slogan": "datele tale nu s-au simțit niciodată mai bine",
+    "logo": "themes/opencloud/assets/logo.svg",
+    "urls": {
+      "accessDeniedHelp": "",
+      "imprint": "",
+      "privacy": ""
+    },
+    "shareRoles": {
+      "b1e2218d-eef8-4d4c-b82d-0f1a1b48f3b5": {
+        "label": "UnifiedRoleViewer",
+        "iconName": "eye"
+      },
+      "a8d5fe5e-96e3-418d-825b-534dbdf22b99": {
+        "label": "UnifiedRoleSpaceViewer",
+        "iconName": "eye"
+      },
+      "2d00ce52-1fc2-4dbc-8b95-a73b73395f5a": {
+        "label": "UnifiedRoleFileEditor",
+        "iconName": "pencil"
+      },
+      "fb6c3e19-e378-47e5-b277-9732f9de6e21": {
+        "label": "UnifiedRoleEditor",
+        "iconName": "pencil"
+      },
+      "58c63c02-1d89-4572-916a-870abc5a1b7d": {
+        "label": "UnifiedRoleSpaceEditor",
+        "iconName": "pencil"
+      },
+      "312c0871-5ef7-4b3a-85b6-0e4074c64049": {
+        "label": "UnifiedRoleManager",
+        "iconName": "user-star"
+      },
+      "1c996275-f1c9-4e71-abdf-a42f6495e960": {
+        "label": "UnifiedRoleUploader",
+        "iconName": "upload"
+      },
+      "aa97fe03-7980-45ac-9e50-b325749fd7e6": {
+        "label": "UnifiedRoleSecureView",
+        "iconName": "shield"
+      }
+    }
+  },
+  "clients": {
+    "android": {},
+    "desktop": {},
+    "ios": {},
+    "web": {
+      "defaults": {
+        "logo": "themes/opencloud/assets/logo.svg",
+        "favicon": "themes/opencloud/assets/favicon.svg",
+        "loginPage": {
+          "backgroundImg": "themes/opencloud/assets/loginBackground.svg"
+        },
+        "designTokens": {
+          "breakpoints": {
+            "xsmall-max": "",
+            "small-default": "",
+            "small-max": "",
+            "medium-default": "",
+            "medium-max": "",
+            "large-default": "",
+            "large-max": "",
+            "xlarge": ""
+          },
+          "fontSizes": {
+            "default": "",
+            "large": "",
+            "medium": ""
+          },
+          "sizes": {
+            "form-check-default": "",
+            "height-small": "",
+            "height-table-row": "",
+            "icon-default": "",
+            "max-height-logo": "",
+            "max-width-logo": "",
+            "width-medium": "",
+            "tiles-default": "",
+            "tiles-resize-step": ""
+          },
+          "spacing": {
+            "xsmall": "",
+            "small": "",
+            "medium": "",
+            "large": "",
+            "xlarge": "",
+            "xxlarge": ""
+          }
+        }
+      },
+      "themes": [
+        {
+          "isDark": false,
+          "label": "Light Theme",
+          "designTokens": {
+            "roles": {
+              "primary": "#4169E1",
+              "surfaceTint": "#4169E1",
+              "onPrimary": "#FFFFFF",
+              "primaryContainer": "#DDE6FF",
+              "onPrimaryContainer": "#00164E",
+              "secondary": "#56627A",
+              "onSecondary": "#FFFFFF",
+              "secondaryContainer": "#DAE2FF",
+              "onSecondaryContainer": "#131C2F",
+              "tertiary": "#705C2E",
+              "onTertiary": "#FFFFFF",
+              "tertiaryContainer": "#FCDFA6",
+              "onTertiaryContainer": "#261A00",
+              "error": "#BA1A1A",
+              "onError": "#FFFFFF",
+              "errorContainer": "#FFDAD6",
+              "onErrorContainer": "#410002",
+              "background": "#F6F8FF",
+              "onBackground": "#1A1F2E",
+              "surface": "#FFFFFF",
+              "onSurface": "#1A1F2E",
+              "surfaceVariant": "#E1E2EC",
+              "onSurfaceVariant": "#44474F",
+              "outline": "#74777F",
+              "outlineVariant": "#C4C6CF",
+              "shadow": "#000000",
+              "scrim": "#000000",
+              "inverseSurface": "#2F3441",
+              "inverseOnSurface": "#F0F1F8",
+              "inversePrimary": "#B8C4FF",
+              "primaryFixed": "#DDE6FF",
+              "onPrimaryFixed": "#00164E",
+              "primaryFixedDim": "#B8C4FF",
+              "onPrimaryFixedVariant": "#1A3EBF",
+              "secondaryFixed": "#DAE2FF",
+              "onSecondaryFixed": "#131C2F",
+              "secondaryFixedDim": "#B7C5E8",
+              "onSecondaryFixedVariant": "#3E4A61",
+              "tertiaryFixed": "#FCDFA6",
+              "onTertiaryFixed": "#261A00",
+              "tertiaryFixedDim": "#DFC38C",
+              "onTertiaryFixedVariant": "#54441A",
+              "surfaceDim": "#D7DAE5",
+              "surfaceBright": "#F6F8FF",
+              "surfaceContainerLowest": "#FFFFFF",
+              "surfaceContainerLow": "#F1F2FA",
+              "surfaceContainer": "#EBECF4",
+              "surfaceContainerHigh": "#E5E7EE",
+              "surfaceContainerHighest": "#DFE1E9",
+              "chrome": "#1B2A4E",
+              "onChrome": "#FFFFFF"
+            },
+            "colorPalette": {
+              "icon-archive": "#fbbe54",
+              "icon-audio": "#700460",
+              "icon-document": "#4169E1",
+              "icon-folder": "#1B2A4E",
+              "icon-image": "#ee6b3b",
+              "icon-medical": "#0984db",
+              "icon-pdf": "#ec0d47",
+              "icon-presentation": "#ee6b3b",
+              "icon-spreadsheet": "#15c286",
+              "icon-video": "#045459"
+            }
+          }
+        },
+        {
+          "isDark": true,
+          "label": "Dark Theme",
+          "designTokens": {
+            "roles": {
+              "primary": "#9DB4FF",
+              "surfaceTint": "#9DB4FF",
+              "onPrimary": "#002266",
+              "primaryContainer": "#1A3EBF",
+              "onPrimaryContainer": "#DDE6FF",
+              "secondary": "#B7C5E8",
+              "onSecondary": "#283341",
+              "secondaryContainer": "#3E4A61",
+              "onSecondaryContainer": "#DAE2FF",
+              "tertiary": "#DFC38C",
+              "onTertiary": "#3D2E04",
+              "tertiaryContainer": "#54441A",
+              "onTertiaryContainer": "#FCDFA6",
+              "error": "#FFB4AB",
+              "onError": "#690005",
+              "errorContainer": "#93000A",
+              "onErrorContainer": "#FFDAD6",
+              "background": "#0E1426",
+              "onBackground": "#E6E9F5",
+              "surface": "#161D33",
+              "onSurface": "#E6E9F5",
+              "surfaceVariant": "#44474F",
+              "onSurfaceVariant": "#C4C6CF",
+              "outline": "#8E9099",
+              "outlineVariant": "#44474F",
+              "shadow": "#000000",
+              "scrim": "#000000",
+              "inverseSurface": "#E6E9F5",
+              "inverseOnSurface": "#2F3441",
+              "inversePrimary": "#4169E1",
+              "primaryFixed": "#DDE6FF",
+              "onPrimaryFixed": "#00164E",
+              "primaryFixedDim": "#B8C4FF",
+              "onPrimaryFixedVariant": "#1A3EBF",
+              "secondaryFixed": "#DAE2FF",
+              "onSecondaryFixed": "#131C2F",
+              "secondaryFixedDim": "#B7C5E8",
+              "onSecondaryFixedVariant": "#3E4A61",
+              "tertiaryFixed": "#FCDFA6",
+              "onTertiaryFixed": "#261A00",
+              "tertiaryFixedDim": "#DFC38C",
+              "onTertiaryFixedVariant": "#54441A",
+              "surfaceDim": "#0E1426",
+              "surfaceBright": "#363B4F",
+              "surfaceContainerLowest": "#080E1C",
+              "surfaceContainerLow": "#161D33",
+              "surfaceContainer": "#1A2137",
+              "surfaceContainerHigh": "#252B42",
+              "surfaceContainerHighest": "#30364E",
+              "chrome": "#0B1020",
+              "onChrome": "#E6E9F5"
+            },
+            "colorPalette": {
+              "icon-archive": "#fbbe54",
+              "icon-audio": "#700460",
+              "icon-document": "#9DB4FF",
+              "icon-folder": "#B8C4FF",
+              "icon-image": "#ee6b3b",
+              "icon-medical": "#0984db",
+              "icon-pdf": "#ec0d47",
+              "icon-presentation": "#ee6b3b",
+              "icon-spreadsheet": "#15c286",
+              "icon-video": "#045459"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
