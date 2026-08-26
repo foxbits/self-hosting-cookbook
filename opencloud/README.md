@@ -73,6 +73,10 @@ Logout:
 
 WebFinger (optional — needed for desktop/mobile clients, so most likely needed):
 - `WEBFINGER_DESKTOP_OIDC_CLIENT_ID`, `WEBFINGER_ANDROID_OIDC_CLIENT_ID`, `WEBFINGER_IOS_OIDC_CLIENT_ID`.
+- `WEBFINGER_WEB_OIDC_CLIENT_SCOPES` — scopes advertised for the web client at `/.well-known/webfinger`. Desktop/mobile defaults already include `offline_access`; the web entry does not. Set to match `WEB_OIDC_SCOPE` so WebFinger discovery stays consistent (harmless if they differ).
+
+OIDC scopes (refresh tokens for the browser):
+- `WEB_OIDC_SCOPE` — the **authoritative** OIDC scope string used by the embedded web client (the JS app in your browser) and sent in the actual `/authorize` request to the IdP. Defaults to `openid profile email`. To make the browser receive a refresh token (so reloads / background tabs don't kick you back to the IdP), add `offline_access`: `WEB_OIDC_SCOPE="openid profile email offline_access"`. The IdP application for the web client must also have refresh-token issuance enabled (`Refresh Token grant` + `Generate refresh tokens`) or it will silently drop `offline_access`.
 
 **TLS / networking:**
 - `OC_INSECURE` — `true` skips certificate validation toward the public URL (use when behind a self-signed / local reverse proxy); `false` validates certificates (use behind a trusted proxy).
