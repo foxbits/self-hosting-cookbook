@@ -149,6 +149,30 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
 3. Go to Admin Panel - Users - Groups
    1. Enable "Open Sharing" if you want people to be able to share chats with a public link or "Public" if you want them to be able to share them with other users from the server only.
+4. Go to Admin Panel -> Settings -> Interface:
+   1. Under **Context Compaction**, set **Token Threshold** to `800000` for models with a 1M context window (the default `80000` is fine for local models with 100k-200k context windows). Also make sure **Token Cap** is at least as high as the threshold.
+   2. **Retained Messages** can stay at `40%` (default). Values are clamped between 10% and 50%.
+   3. Leave **Context Compaction Model** on Current Model unless your summarizer produces weak or truncated checkpoints.
+   4. Optionally raise **Task Model Parameters / max_tokens** if you want richer summaries for 1M-window models (defaults to 1000 tokens).
+5. (Optional) Configure Title Generation to produce emoji-prefixed, descriptive titles:
+   1. In the same Admin Panel -> Settings -> Interface page, scroll to the **Title Generation** section (under **Tasks**).
+   2. Enable **Title Generation**.
+   3. Paste the following prompt into **Title Generation Prompt**:
+      ```
+      Generate a short, descriptive title for the conversation below.
+      Rules:
+      - must be short (2-6 words)
+      - must summarize the core topic
+      - must start with an emoji relevant to the topic
+      - must be in the same language as the conversation
+
+      Return only a valid JSON object with the key "title", e.g. {"title": "🌤️ Weather chat"}. 
+      Do not add any extra text, no markdown, no explanation.
+
+      Conversation:
+      {{prompt}} {{MESSAGES}}
+      ```
+   4. Choose a capable **Task Model** that follows instructions well and outputs clean JSON.
 
 #### Configure Crawl4AI as web fetcher
 1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
