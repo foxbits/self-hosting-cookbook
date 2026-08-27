@@ -123,7 +123,7 @@ engines:
     shortcut: wp
     categories: [general]
     weight: 2
-    language: "auto"
+    language: "en"
 
 # ============================================================
 #  OUTGOING — HTTP client settings / limits
