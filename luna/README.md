@@ -6,9 +6,6 @@ This is the docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
   - [Configure the stack](#configure-the-stack)
-    - [For your user](#for-your-user)
-    - [For the server](#for-the-server)
-    - [Configure Crawl4AI as web fetcher](#configure-crawl4ai-as-web-fetcher)
   - [Back-up](#back-up)
 
 
@@ -147,6 +144,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    3. For language set `all`
    4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
    5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
+   6. Set Parallel searches to `1` (or small numbers) to avoid getting blocked and captcha'd by search engines.
 3. Go to Admin Panel - Users - Groups
    1. Enable "Open Sharing" if you want people to be able to share chats with a public link or "Public" if you want them to be able to share them with other users from the server only.
 4. Go to Admin Panel -> Settings -> Interface:

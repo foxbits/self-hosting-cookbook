@@ -138,14 +138,6 @@ outgoing:
   pool_connections: 1      # cap concurrent connections to each engine
   pool_maxsize: 1
 
-botdetection:
-  ip_limit:
-    link_token: 1
-    ipv4_link_token: 2
-    ipv4_burst: 2
-    ipv6_link_token: 2
-    ipv6_burst: 2
-
 # ============================================================
 #  Redis / Valkey instance for caching / rate limiting etc.
 # ============================================================
