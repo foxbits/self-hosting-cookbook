@@ -74,7 +74,7 @@ Logout:
 
 WebFinger (optional — needed for desktop/mobile clients, so most likely needed):
 - `WEBFINGER_DESKTOP_OIDC_CLIENT_ID`, `WEBFINGER_ANDROID_OIDC_CLIENT_ID`, `WEBFINGER_IOS_OIDC_CLIENT_ID`.
-- `WEBFINGER_WEB_OIDC_CLIENT_SCOPES` — scopes advertised for the web client at `/.well-known/webfinger`. Desktop/mobile defaults already include `offline_access`; the web entry does not. Set to match `WEB_OIDC_SCOPE` so WebFinger discovery stays consistent (harmless if they differ).
+- `WEBFINGER_WEB_OIDC_CLIENT_SCOPES`, `WEBFINGER_IOS_OIDC_CLIENT_SCOPES`, `WEBFINGER_ANDROID_OIDC_CLIENT_SCOPES` — scopes advertised for each client at `/.well-known/webfinger`. **These scopes are required for refresh tokens to work**: the client requests them from the `/.well-known/webfinger` discovery document, and the IdP only issues a refresh token when the matching scope (notably `offline_access`) is present in that discovery response. The web entry does not include `offline_access` by default — set all three to `openid profile email offline_access` (matching `WEB_OIDC_SCOPE`) so every client gets a refreshable token.
 
 OIDC scopes (refresh tokens for the browser):
 - `WEB_OIDC_SCOPE` — the **authoritative** OIDC scope string used by the embedded web client (the JS app in your browser) and sent in the actual `/authorize` request to the IdP. Defaults to `openid profile email`. To make the browser receive a refresh token (so reloads / background tabs don't kick you back to the IdP), add `offline_access`: `WEB_OIDC_SCOPE="openid profile email offline_access"`. The IdP application for the web client must also have refresh-token issuance enabled (`Refresh Token grant` + `Generate refresh tokens`) or it will silently drop `offline_access`.
@@ -213,7 +213,7 @@ Recommended combination for OpenCloud:
 
 | Setting | Value | Why |
 |---|---|---|
-| **Client Authentication** | `Not required when using PKCE` | No client secret needed, but still enforces PKCE at the token endpoint |
+| **Client Authentication** | `Not required` | **Must be "Not required" for refresh tokens to work.** The PKCE-only exemption only waives `client_secret` when a `code_verifier` is present — and `code_verifier` is only sent on the initial Authorization Code grant. The Refresh Token grant sends no `code_verifier`, so with "Not required when using PKCE" the public client can't refresh and gets logged out after the access token TTL. "Not required" waives `client_secret` for **all** token-endpoint requests; PKCE still secures the initial login. |
 | **PKCE** | `Required` | OpenCloud always sends `code_verifier` — enforce it |
 | **Authorization Code grant** | ✅ Enabled | OpenCloud uses the auth-code flow |
 | **Refresh Token grant** | ✅ Enabled | Needed for `offline_access` (desktop/mobile clients) |
