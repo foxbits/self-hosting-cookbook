@@ -41,7 +41,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `SEARXNG_BASE_URL`: the URL you will be accessing the SearXNG instance from a browser, it is usually either `http://localhost:9704` or `http://my-local-server-address:9704`. Service-to-service communication is not affected by this URL. It is not advisable to expose your instance publicly (or at least protect it with a reverse proxy with authentication)
 - `LOCALE`: the language ISO code used by default in the SearXNG UI and results (e.g. `en`)
 - `COUNTRY_CODE`: the country ISO code used by default by SearXNG results (e.g. `US`)
-- `SEARXNG_SECRET_KEY`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
+- `SEARXNG_SECRET`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
 - `MAX_CONCURRENT_TASKS`: Depends on the allowed number of concurrent tasks for a crawl, number must be considered with the formula agent count x parallel tasks x 150MB depending on the RAM you allocate and the number of agents you plan to use. Default is 10.
 - `CRAWL4AI_API_TOKEN`: Random token to protect the crawl4ai instance; can use `openssl rand -hex 32` to generate

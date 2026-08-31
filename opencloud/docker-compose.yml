@@ -1,0 +1,46 @@
+# OpenCloud (external-proxy, external OIDC IdP) — adapted to self-hosting-cookbook conventions.
+# Derived from opencloud-eu/opencloud-compose: docker-compose.yml + external-proxy/opencloud.yml.
+# File-storage only (no document editor). No bundled Traefik; front with your existing reverse
+# proxy (Caddy/Nginx/cloudflared) terminating TLS for OC_DOMAIN.
+services:
+  opencloud:
+    image: ${OC_DOCKER_IMAGE}:${OC_DOCKER_TAG}
+    container_name: opencloud
+    user: ${OC_CONTAINER_UID_GID}
+    restart: unless-stopped
+    networks:
+      - home-lab-net
+    ports:
+      - "127.0.0.1:9863:9200"
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "opencloud init || true; opencloud server"]
+    env_file:
+      - .env
+    environment:
+      # --- Derived/computed values (interpolate from .env; analogous to DATABASE_URL in immich) ---
+      OC_URL: https://${OC_DOMAIN}
+      OC_ADD_RUN_SERVICES: ${START_ADDITIONAL_SERVICES:-}
+      # --- Fixed configuration constants (not user-configurable; like fusionauth's SEARCH_TYPE) ---
+      PROXY_TLS: "false"
+      PROXY_HTTP_ADDR: "0.0.0.0:9200"
+      PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
+      FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
+      OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
+      # --- Theming (defaults match the upstream)
+      WEB_ASSET_THEMES_PATH: /var/lib/opencloud/web/assets/themes
+      WEB_UI_THEME_PATH: /themes/opencloud/theme.json
+    volumes:
+      - ./config/opencloud/csp.yaml:/etc/opencloud/csp.yaml
+      - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml
+      - ./config/opencloud/banned-password-list.txt:/etc/opencloud/banned-password-list.txt
+      - ${SH_OC_CONFIG_DIR}:/etc/opencloud
+      - ${SH_OC_DATA_DIR}:/var/lib/opencloud
+      - ./config/opencloud/themes:/var/lib/opencloud/web/assets/themes
+      - ./config/opencloud/assets/images/icon-petrol.svg:/var/lib/opencloud/web/assets/images/icon-petrol.svg:ro
+      - ${SH_OC_APPS_DIR}:/var/lib/opencloud/web/assets/apps
+    logging:
+      driver: ${LOG_DRIVER}
+
+networks:
+  home-lab-net:
+    external: true

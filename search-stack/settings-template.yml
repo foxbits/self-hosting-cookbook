@@ -18,7 +18,7 @@ general:
   enable_metrics: true
 
 server:
-  secret_key: ""                        # Automatically set from env -> SEARXNG_SECRET_KEY, leave empty
+  secret_key: ""                        # Automatically set from env -> $SEARXNG_SECRET, leave empty
   limiter: $LIMITER_ENABLED
   image_proxy: true
   http_protocol_version: "1.1"
@@ -48,17 +48,17 @@ ui:
 # ============================================================
 search:
   safe_search: 0
-  autocomplete: "google"
+  autocomplete: "duckduckgo"
   default_lang: "auto"
   ban_time_on_fail: 5
   max_ban_time_on_fail: 120
   suspended_times:
-    SearxEngineAccessDenied: 86400
-    SearxEngineCaptcha: 86400
-    SearxEngineTooManyRequests: 3600
-    cf_SearxEngineCaptcha: 1296000
-    cf_SearxEngineAccessDenied: 86400
-    recaptcha_SearxEngineCaptcha: 604800
+    SearxEngineAccessDenied: 300        # 5 min — short for personal/residential use
+    SearxEngineCaptcha: 300             # 5 min
+    SearxEngineTooManyRequests: 300     # 5 min
+    cf_SearxEngineCaptcha: 3600         # 1 h
+    cf_SearxEngineAccessDenied: 300     # 5 min
+    recaptcha_SearxEngineCaptcha: 3600  # 1 h
   formats:
     - html
     - json       # ← REQUIRED for Hermes + GPT-Researcher API calls
@@ -78,8 +78,7 @@ search:
 #    it         → general IT search (StackExchange sites, GitHub)
 # ============================================================
 engines:
-
-  # ---------- GENERAL / WEB ----------
+    # ---------- GENERAL / WEB SEARCH ONLY ----------
   - name: google
     engine: google
     shortcut: g
@@ -96,191 +95,48 @@ engines:
   - name: duckduckgo
     engine: duckduckgo
     shortcut: ddg
-    categories: [general, web, finance, news]
+    categories: [general, web]
     weight: 1
 
-  - name: bing
+  - name: bing                      # ← added
     engine: bing
     shortcut: b
     categories: [general, web]
     weight: 1
-    disabled: true                      # Bing is sometimes more restrictive, keep disabled unless needed
+    # disabled: false  → keep ENABLED; remove the disabled flag from your original [3]
 
-  # ---------- NEWS ----------
-  - name: google news
-    engine: google_news
-    shortcut: gn
-    categories: [news, finance]
-    weight: 2
-  
-  - name: google news rss
-    engine: xpath
-    shortcut: gnr
-    categories: [news, finance]
-    search_url: https://news.google.com/rss/search?q={query}&hl=$LOCALE-$COUNTRY_CODE&gl=$COUNTRY_CODE&ceid=$COUNTRY_CODE:$LOCALE
-    results_xpath: //channel/item
-    url_xpath: link/text()
-    title_xpath: title/text()
-    content_xpath: description/text()
-    soft_max_redirects: 10
-    timeout: 10.0
-    weight: 2
-
-  - name: qwant news
+  - name: qwant                     # ← added
     engine: qwant
-    shortcut: qn
-    categories: [news, finance]
-    qwant_category: news
-    weight: 2
-
-  - name: bing news
-    engine: bing_news
-    shortcut: bn
-    categories: [news]
+    shortcut: qw
+    categories: [general, web]
+    qwant_category: web
     weight: 1
-
-  - name: brave news
-    engine: brave
-    shortcut: brn
-    categories: [news, finance]
-    brave_category: news
-    weight: 2
-
-  - name: hackernews
-    engine: hackernews
-    shortcut: hn
-    categories: [news, social, tech]
+  
+  - name: startpage
+    engine: startpage
+    shortcut: sp
+    categories: [general, web]
     weight: 1
-
-  # ---------- ACADEMIC / SCIENCE ----------
-  - name: google scholar
-    engine: google_scholar
-    shortcut: gs
-    categories: [science, academic]
-    weight: 3
-
-  - name: semantic scholar
-    engine: semantic_scholar
-    shortcut: ss
-    categories: [science, academic]
-    weight: 3
-
-  - name: arxiv
-    engine: arxiv
-    shortcut: ax
-    categories: [science, academic]
-    weight: 3
-
-  - name: pubmed
-    engine: pubmed
-    shortcut: pm
-    categories: [science, academic, health]
-    weight: 2
 
   - name: wikipedia
     engine: wikipedia
     shortcut: wp
-    categories: [general, science]
-    weight: 1
+    categories: [general]
+    weight: 2
     language: "en"
 
-  # ---------- SOCIAL MEDIA ----------
-  - name: reddit
-    engine: reddit
-    shortcut: re
-    categories: [social, news]
-    weight: 2
-    page_size: 25
-
-  - name: lemmy posts
-    engine: lemmy
-    shortcut: lepo
-    categories: [social]
-    weight: 2
-    lemmy_type: posts
-
-  - name: lemmy communities
-    engine: lemmy
-    shortcut: leco
-    categories: [social]
-    weight: 1
-    lemmy_type: communities
-
-  - name: mastodon hashtags
-    engine: mastodon
-    shortcut: mah
-    categories: [social]
-    weight: 1
-    mastodon_type: hashtags
-
-  - name: tootfinder
-    engine: tootfinder
-    shortcut: toot
-    categories: [social]
-    weight: 1
-
-  # ---------- FINANCE a few specifics + defaults to general search ----------
-  - name: reuters
-    engine: reuters
-    shortcut: reu
-    categories: [finance, news]
-    weight: 2
-
-  # Brave and Google News already included in the news section
-
-  - name: currency converter
-    engine: currency_convert
-    shortcut: curr
-    categories: [finance]
-    weight: 2
-
-  - name: wolfram alpha
-    engine: wolframalpha_api
-    shortcut: wlf
-    categories: [finance, science]
-    api_key: "$WOLFRAM_API_KEY"
-    disabled: $WOLFRAM_DISABLED
-    weight: 2
-
-  # ---------- CODE ----------
-  - name: github
-    engine: github
-    shortcut: gh
-    categories: [code, it]
-    weight: 2
-
-  - name: stack overflow
-    engine: stackexchange
-    shortcut: seso
-    categories: [code, it]
-    api_site: stackoverflow
-    weight: 2
-
-  # BONUS — other it sites
-  - name: super user
-    engine: stackexchange
-    shortcut: sesu
-    categories: [it]
-    api_site: superuser
-
-  - name: server fault
-    engine: stackexchange
-    shortcut: sesf
-    categories: [it]
-    api_site: serverfault
-
 # ============================================================
-#  OUTGOING — HTTP client settings
+#  OUTGOING — HTTP client settings / limits
 # ============================================================
 outgoing:
   request_timeout: 10.0
   max_request_timeout: 30.0
-  pool_connections: 100
-  pool_maxsize: 20
   enable_http2: true
   retries: 1
   retry_on_http_error: true
   using_tor_proxy: false
+  pool_connections: 1      # cap concurrent connections to each engine
+  pool_maxsize: 1
 
 # ============================================================
 #  Redis / Valkey instance for caching / rate limiting etc.

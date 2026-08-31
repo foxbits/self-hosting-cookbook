@@ -10,10 +10,11 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 7. [`immich`](immich) - docker compose setup for [Immich](https://immich.app/), a self-hosted photo and video backup solution with mobile apps for automatic backup
 8. [`jenkins`](jenkins) - docker compose setup for a simple jenkins stack with a controller and an agent that runs the jobs (CI/CD). This is build based on the documentation available at [jenkins](https://github.com/jenkinsci/docker/blob/master/README.md). The agent is custom made - it is given access to docker on the host machine (DooS - to run builds in containers and be able to deploy) and can run `make` commands
 9. [`luna`](luna) - docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a self-hosted AI chat interface with web search, RAG, image generation, and tool calling capabilities; works best as an assistant using [`search-stack`](./search-stack/).
-10. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
-11. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
-12. [`search-stack`](search-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
-13. [`scrobblex`](scrobblex) - docker compose setup for a simple [scrobblex](https://github.com/ryck/scrobblex) agent that can be connected to Plex and used to scrobble Plex plays live into trakt.tv.
+10. [`opencloud`](opencloud) - docker compose setup for [OpenCloud](https://opencloud.eu), a self-hosted file sync and share platform (Nextcloud replacement) with external OIDC authentication (defaults to [`fusionauth`](fusionauth)).
+11. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
+12. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
+13. [`search-stack`](search-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+14. [`scrobblex`](scrobblex) - docker compose setup for a simple [scrobblex](https://github.com/ryck/scrobblex) agent that can be connected to Plex and used to scrobble Plex plays live into trakt.tv.
 
 
 ## How to use
@@ -32,7 +33,7 @@ The `EXECUTION_ORDER` environment variable controls the order in which services 
 If `EXECUTION_ORDER` is not set in either file, `make run-update-all` will fail. Copy `.env.default` to `.env` and edit it to customize the order. The default order is:
 
 ```
-datastore-memory datastore-sql fusionauth beszel portainer actual plex-server scrobblex arr-stack immich jenkins search-stack luna
+datastore-memory datastore-sql fusionauth beszel portainer actual plex-server scrobblex arr-stack immich jenkins search-stack luna opencloud
 ```
 
 ### How to run

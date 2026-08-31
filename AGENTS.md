@@ -7,6 +7,28 @@ conventions. Read this, then the upstream docs for the service you are deploying
 
 When asked to "add a new service/stack", follow the checklist at the bottom of this file.
 
+## Development environment
+
+This repository is a **code-only** workspace. It does **not** have Docker or any container
+runtime installed, and no service is ever executed here — stacks are not deployed, started, or
+debugged in this environment. The `.env.default` files committed to this repo are examples
+(`.env.default`/`.env.example`-style placeholders with `CHANGE_ME` values and inline comments);
+they are **never** used to run anything locally.
+
+The actual deployment lives on a separate host that has Docker and `docker compose` installed.
+That host copies a service's `.env.default` to `.env`, fills in real secrets/values, and runs
+`make run-update` from inside that service's directory. So:
+
+- Do **not** try to run `docker compose config`, `docker compose up`, `make run`, etc. in this
+  repo — none of those commands work here. Treat the validation checklist's `docker compose
+  config` step as a *recommendation to run on the deployment host*, not something to execute in
+  this workspace.
+- Do **not** assume `.env` files exist or are usable in this workspace; only `.env.default` is
+  guaranteed to be present and safe to read.
+- Any verification you can do here is limited to static checks: file layout, YAML syntax,
+  referenced paths/ports, alignment with this file's conventions, and consistency between the
+  service files and the root-level metadata.
+
 ## Repository layout
 
 ```
@@ -55,7 +77,7 @@ Current host ports in use:
 2283 immich | 3090 scrobblex | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
 7878 radarr | 8090 beszel | 8191 flaresolverr | 8989 sonarr | 9117 jackett (arr-stack)
 9701 fusionauth | 9704 searxng | 9705 crawl4ai | 9706 gpt-researcher | 9707 luna | 9708 open-crawl
-9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify
+9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud
 ```
 (plex-server uses `network_mode: host` and the host's own 32400 — a special case; avoid unless
 the upstream image requires host networking.)
