@@ -74,7 +74,7 @@ the list so the next agent sees an up-to-date picture (see the checklist).
 
 Current host ports in use:
 ```
-2283 immich | 3090 scrobblex | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
+2283 immich | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
 7878 radarr | 8090 beszel | 8191 flaresolverr | 8989 sonarr | 9117 jackett (arr-stack)
 9701 fusionauth | 9704 searxng | 9705 crawl4ai | 9706 gpt-researcher | 9707 luna | 9708 open-crawl
 9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud
@@ -211,7 +211,7 @@ Follow this structure (mirror `actual/README.md` / `apprise-notify/README.md`):
 ## Three deployment patterns
 
 1. **Official image** — `image: <image>:latest`. No Dockerfile. (actual, apprise-notify, beszel,
-   datastore-*, fusionauth, scrobblex, portainer.)
+   datastore-*, fusionauth, portainer.)
 2. **Overlay** (customize an official image) — a local `Dockerfile` starting `FROM <official>`
    that COPYs/patches assets; `build: context: .`. (luna overlays branding onto open-webui.)
 3. **Build from a separate source repo** — the app source + Dockerfile live in another repo
