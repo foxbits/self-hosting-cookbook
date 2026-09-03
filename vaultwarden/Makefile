@@ -57,7 +57,7 @@ generate-admin-token:
 		echo "ADMIN_TOKEN is already set in .env — nothing to do." ; \
 	else \
 		echo "Type the new admin passphrase (you will be prompted twice)..." ; \
-		HASH=$$(docker run --rm -i vaultwarden/server:latest /vaultwarden hash | grep -o '\$$argon2[^ ]*') ; \
+		HASH=$$(docker run --rm -it vaultwarden/server /vaultwarden hash | grep -o '\$$argon2[^[:space:]]*' | tr -d "'\"") ; \
 		if [ -z "$$HASH" ]; then \
 			echo "ERROR: could not obtain an Argon2 hash (is docker running, were both prompts answered?). .env untouched." ; \
 			exit 1 ; \
