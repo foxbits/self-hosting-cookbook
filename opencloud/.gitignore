@@ -1,3 +1,2 @@
 .env
-config/opencloud/apps/*
-!config/opencloud/apps/.gitkeep
+config/
