@@ -14,6 +14,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 11. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
 12. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
 13. [`search-stack`](search-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+14. [`vaultwarden`](vaultwarden) - docker compose setup for a [VaultWarden](https://github.com/dani-garcia/vaultwarden) server, a community Bitwarden-compatible password manager backend
 
 
 ## How to use
@@ -32,7 +33,7 @@ The `EXECUTION_ORDER` environment variable controls the order in which services 
 If `EXECUTION_ORDER` is not set in either file, `make run-update-all` will fail. Copy `.env.default` to `.env` and edit it to customize the order. The default order is:
 
 ```
-datastore-memory datastore-sql fusionauth beszel portainer actual plex-server arr-stack immich jenkins search-stack luna opencloud
+datastore-memory datastore-sql fusionauth beszel portainer actual plex-server arr-stack immich jenkins search-stack luna opencloud vaultwarden
 ```
 
 ### How to run

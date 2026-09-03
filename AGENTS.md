@@ -77,7 +77,7 @@ Current host ports in use:
 2283 immich | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
 7878 radarr | 8090 beszel | 8191 flaresolverr | 8989 sonarr | 9117 jackett (arr-stack)
 9701 fusionauth | 9704 searxng | 9705 crawl4ai | 9706 gpt-researcher | 9707 luna | 9708 open-crawl
-9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud
+9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud | 9864 vaultwarden
 ```
 (plex-server uses `network_mode: host` and the host's own 32400 — a special case; avoid unless
 the upstream image requires host networking.)
