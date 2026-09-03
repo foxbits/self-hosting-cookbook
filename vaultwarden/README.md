@@ -11,6 +11,10 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 	- [Public HTTPS address](#public-https-address)
 	- [First-run setup](#first-run-setup)
 	- [Admin page protection model](#admin-page-protection-model)
+	- [Blocking /admin in Cloudflare WAF](#blocking-admin-in-cloudflare-waf)
+		- [1. Create the custom rule](#1-create-the-custom-rule)
+		- [2. Verify the block](#2-verify-the-block)
+		- [3. Pitfalls](#3-pitfalls)
 	- [Back-up](#back-up)
 	- [Physical copy of the master password](#physical-copy-of-the-master-password)
 - [Security](#security)
@@ -34,7 +38,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `DOMAIN` - (REQUIRED) public https URL of this instance, scheme + host, e.g. `https://vault.example.com`. Must exactly match the address clients use. See [Public HTTPS address](#public-https-address).
 - `SIGNUPS_ALLOWED` - keep `false`. Users are created by temporarily enabling signups via the `/admin` panel toggle (never by flipping env vars), then disabling again. See [First-run setup](#first-run-setup).
 - `INVITATIONS_ALLOWED` - keep `true` so admins can invite users while signups stay off. Invites REQUIRE working SMTP — without it they fail silently.
-- `SHOW_PASSWORD_HINT` - keep `true` if you want users to put hints.
+- `SHOW_PASSWORD_HINT` - keep `false` (usually can expose info to attackers)
 - `ADMIN_TOKEN` - must be an Argon2 PHC hash, NOT plaintext (plaintext in `.env` is readable via `docker inspect`). Primary path: set `ENABLE_ADMIN=true` and run `make generate-admin-token` from this directory — it prompts for a passphrase twice and writes the hash into `.env` automatically (skipped if a token is already set). Fallback: run `docker run --rm -it vaultwarden/server:latest /vaultwarden hash` yourself, or use the host `argon2` CLI, and paste the printed `$argon2id$...` string single-quoted into `.env`. No `$$` escaping needed (`env_file` values are passed literally). Leave empty to keep `/admin` fully disabled. See [Admin page protection model](#admin-page-protection-model).
 - `ENABLE_ADMIN` - gates `make generate-admin-token` only (VaultWarden ignores it). Set `true` to allow automatic token generation; the target only writes when `ADMIN_TOKEN` is empty/missing/`CHANGE_ME` and never overwrites an existing token.
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURITY` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_FROM` / `SMTP_FROM_NAME` (+ optional `SMTP_TIMEOUT`) - (optional, but REQUIRED for organization invites, email verification, and email 2FA — invites fail silently without working SMTP).
@@ -82,7 +86,7 @@ So: expose this service at a public DNS name with TLS termination in front of it
 5. Toggle signups OFF in `/admin`.
 6. Log in as the user, enable 2FA / FIDO2 on the account, and verify WebSocket live-sync and attachments work.
 7. Optionally configure SMTP in `.env` / the panel — a hard requirement for invites, email verification, and email 2FA.
-8. Add a permanent Cloudflare WAF custom rule blocking `/admin*` from the public internet, and thereafter reach `/admin` only via a non-public path.
+8. Add a permanent Cloudflare WAF custom rule blocking `/admin*` from the public internet (see [Blocking /admin in Cloudflare WAF](#blocking-admin-in-cloudflare-waf)), and thereafter reach `/admin` only via a non-public path.
 9. Note: the first user is NOT special — VaultWarden has no super-admin account flag; `/admin` is server-level and stands apart from user accounts.
 
 ### Admin page protection model
@@ -93,7 +97,36 @@ The `/admin` page has a layered protection model, and its default state is off:
 - **Token authentication.** The token must be an Argon2 PHC hash, not plaintext — generate it with the image's built-in `vaultwarden hash` command (`make generate-admin-token`) or the host `argon2` CLI. A plaintext token in compose / `.env` is readable by anyone who can `docker inspect`; a PHC hash is not reversible.
 - **Short-lived sessions.** Entering the token grants a signed session cookie (~20 minutes), so the credential is not re-transmitted on every click. Nuance: changing the token from inside the panel itself does NOT deauthorize existing admin sessions — restart the container after rotating the token.
 - **Rate limiting** on the login route (configurable via the `ADMIN_RATELIMIT_*` env vars), so brute-forcing the token form is throttled.
-- **Network layer.** A Cloudflare WAF rule blocking `/admin*` (see [First-run setup](#first-run-setup)) means the form is not even reachable from the public internet. Tunnel + WAF block + Argon2 token is defense in depth; any one layer failing still leaves the others.
+- **Network layer.** A Cloudflare WAF rule blocking `/admin*` (see [Blocking /admin in Cloudflare WAF](#blocking-admin-in-cloudflare-waf)) means the form is not even reachable from the public internet. Tunnel + WAF block + Argon2 token is defense in depth; any one layer failing still leaves the others.
+
+### Blocking /admin in Cloudflare WAF
+
+Assumes the vault is publicly reachable at `https://vault.example.com` (replace with your real `DOMAIN` throughout). Do this once the reverse proxy is in place, and keep the rule permanently — afterwards reach `/admin` only via a non-public path (LAN address, direct `host:9864`, or VPN).
+
+#### 1. Create the custom rule
+
+1. In the Cloudflare dashboard, open your zone (`example.com`) and go to the **Security rules** page.
+2. Select **Create rule** → **Custom rules**.
+3. **Rule name**: e.g. `vaultwarden-deny-admin`.
+4. Under **When incoming requests match**, add two conditions (AND):
+   - **Field** `Hostname`, **Operator** `equals`, **Value** `vault.example.com` — scopes the rule to the vault so other sites in the zone are unaffected.
+   - **Field** `URI Path`, **Operator** `wildcard`, **Value** `/admin*` — matches `/admin` and everything beneath it (`/admin/users`, `/admin/static/*`, …).
+   - As an expression: `(http.host eq "vault.example.com" and http.request.uri.path wildcard r"/admin*")`.
+5. Under **Then take action**, choose **Block** (the default 403 response is fine).
+6. Select **Deploy** (not Save as Draft).
+
+#### 2. Verify the block
+
+- From the public internet, `https://vault.example.com/admin` must return `403`, while `https://vault.example.com/` still returns `200`:
+  `curl -s -o /dev/null -w "%{http_code}\n" https://vault.example.com/admin`
+- In the dashboard under **Security** → **Events**, filter by the rule name to confirm blocked requests are logged.
+- Confirm you can still reach the panel via your non-public path (e.g. `http://<host-lan-ip>:9864/admin`).
+
+#### 3. Pitfalls
+
+- The rule only works for traffic actually proxied through Cloudflare (orange-clouded DNS record). If `vault.example.com` is DNS-only (grey cloud), the WAF never sees the requests — fix the proxy status instead of debugging the rule.
+- `URI Path` matches the path only, without the query string — `/admin?anything` is still blocked. `/admin` is VaultWarden's only privileged endpoint, so one rule covers the whole admin surface.
+- If you ever change `DOMAIN` to a new hostname, update the Hostname condition to match.
 
 ### Back-up
 
