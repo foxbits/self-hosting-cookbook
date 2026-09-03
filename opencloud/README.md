@@ -111,6 +111,8 @@ OIDC scopes (refresh tokens for the browser):
 This stack ships a custom **`🦊⛅` royal-blue theme** for the OpenCloud web UI via OpenCloud's **official theming mechanism** ([docs](https://docs.opencloud.eu/docs/dev/server/services/web/information#loading-themes)) — no overlay, no custom CSS.
 
 **Where it lives:**
+
+The committed templates live in `config-example/`; `make run` copies them to the gitignored `./config/` on first start (via `make init-config`) — edit the files under `./config/` afterwards.
 ```
 config/opencloud/themes/opencloud/
 ├── theme.json          # the theme definition (brand, slogan, M3 color roles, file-icon palette)
@@ -326,8 +328,9 @@ User logs in via FusionAuth
 ### Starting the stack
 
 - `make pull` — pulls the OpenCloud image.
+- `make init-config` — seeds gitignored `./config/` from committed `./config-example/` on first run (no-op afterwards, so local edits are never overwritten).
 - `make init-storage` — creates the bind-mount dirs and chowns them to `1000:1000` (one-time, idempotent).
-- `make run` — runs `init-storage`, then `docker compose down && docker compose up -d`.
+- `make run` — runs `init-config` + `init-storage`, then `docker compose down && docker compose up -d`.
 - `make run-update` — `make pull` followed by `make run`.
 
 After `make run`, reach OpenCloud at `https://OC_DOMAIN` through your reverse proxy. Log in is via your external IdP — the first OIDC login auto-provisions your OpenCloud account, and your role is taken from the `roles` claim if [role assignment](#6-role-assignment-making-a-user-admin) is enabled. (If you re-enabled the built-in IdP instead, log in as `admin` with `IDM_ADMIN_PASSWORD`.)
