@@ -161,7 +161,7 @@ run-update:
 update-run: run-update
 ```
 
-**Build-from-source / overlay service** (luna, search-stack): add a `build` target and have
+**Build-from-source / overlay service** (luna, agents-stack): add a `build` target and have
 `run-update` build first:
 ```makefile
 build:
@@ -222,7 +222,7 @@ Follow this structure (mirror `actual/README.md` / `apprise-notify/README.md`):
      dockerfile: Dockerfile
    ```
    and in `.env.default`: `<NAME>_PATH=../../repos/<repo>`. Add a `build` Makefile target.
-   (search-stack builds `open-crawl`/`gpt-researcher` this way.) The Dockerfile is NOT in the
+   (agents-stack builds `open-crawl`/`gpt-researcher` this way.) The Dockerfile is NOT in the
    cookbook dir — it lives in the source repo.
 
 (In-repo source build — `build: context: .` with a Dockerfile in the service dir — is also valid;

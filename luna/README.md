@@ -173,7 +173,7 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
    4. Choose a capable **Task Model** that follows instructions well and outputs clean JSON.
 
 #### Configure Crawl4AI as web fetcher
-1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
+1. By default, the [`agents-stack`](./../agents-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
 
 ### Back-up
 

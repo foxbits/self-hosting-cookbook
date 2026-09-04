@@ -2,18 +2,18 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 
 ## Applications list
 1. [`actual`](actual) - docker compose setup for an [Actual](https://actualbudget.org/docs/) server, for money management with envelope budgeting and calendar events.
-2. [`arr-stack`](arr-stack) - docker compose setup for the official images for the *arr stack: [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr), [jackett](https://github.com/Jackett/Jackett) and [flaresolverr](https://github.com/FlareSolverr/FlareSolverr)
-3. [`beszel`](./beszel/) - docker compose setup for a [Beszel](https://beszel.dev/) system monitoring server that can monitor both system usage, services and docker containers.
-4. [`datastore-sql`](datastore-sql) - docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically, with vector database support
-5. [`datastore-memory`](datastore-memory) - docker compose setup for an In-Memory Database, [Valkey](https://valkey.io/) specifically
-6. [`fusionauth`](fusionauth) - docker compose setup for an [FusionAuth](https://fusionauth.io/docs/get-started/download-and-install/docker) (community edition), a fully integrated authentication and authorization server
-7. [`immich`](immich) - docker compose setup for [Immich](https://immich.app/), a self-hosted photo and video backup solution with mobile apps for automatic backup
-8. [`jenkins`](jenkins) - docker compose setup for a simple jenkins stack with a controller and an agent that runs the jobs (CI/CD). This is build based on the documentation available at [jenkins](https://github.com/jenkinsci/docker/blob/master/README.md). The agent is custom made - it is given access to docker on the host machine (DooS - to run builds in containers and be able to deploy) and can run `make` commands
-9. [`luna`](luna) - docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a self-hosted AI chat interface with web search, RAG, image generation, and tool calling capabilities; works best as an assistant using [`search-stack`](./search-stack/).
-10. [`opencloud`](opencloud) - docker compose setup for [OpenCloud](https://opencloud.eu), a self-hosted file sync and share platform (Nextcloud replacement) with external OIDC authentication (defaults to [`fusionauth`](fusionauth)).
-11. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
-12. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
-13. [`search-stack`](search-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+2. [`agents-stack`](agents-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+3. [`arr-stack`](arr-stack) - docker compose setup for the official images for the *arr stack: [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr), [jackett](https://github.com/Jackett/Jackett) and [flaresolverr](https://github.com/FlareSolverr/FlareSolverr)
+4. [`beszel`](./beszel/) - docker compose setup for a [Beszel](https://beszel.dev/) system monitoring server that can monitor both system usage, services and docker containers.
+5. [`datastore-sql`](datastore-sql) - docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically, with vector database support
+6. [`datastore-memory`](datastore-memory) - docker compose setup for an In-Memory Database, [Valkey](https://valkey.io/) specifically
+7. [`fusionauth`](fusionauth) - docker compose setup for an [FusionAuth](https://fusionauth.io/docs/get-started/download-and-install/docker) (community edition), a fully integrated authentication and authorization server
+8. [`immich`](immich) - docker compose setup for [Immich](https://immich.app/), a self-hosted photo and video backup solution with mobile apps for automatic backup
+9. [`jenkins`](jenkins) - docker compose setup for a simple jenkins stack with a controller and an agent that runs the jobs (CI/CD). This is build based on the documentation available at [jenkins](https://github.com/jenkinsci/docker/blob/master/README.md). The agent is custom made - it is given access to docker on the host machine (DooS - to run builds in containers and be able to deploy) and can run `make` commands
+10. [`luna`](luna) - docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a self-hosted AI chat interface with web search, RAG, image generation, and tool calling capabilities; works best as an assistant using [`agents-stack`](./agents-stack/).
+11. [`opencloud`](opencloud) - docker compose setup for [OpenCloud](https://opencloud.eu), a self-hosted file sync and share platform (Nextcloud replacement) with external OIDC authentication (defaults to [`fusionauth`](fusionauth)).
+12. [`plex-server`](plex-server) - docker compose setup for Plex Media Server - one of the top movies, TV and music personal servers management systems.
+13. [`portainer`](portainer) - docker compose setup for [portainer](https://docs.portainer.io), a web UI for docker container management
 14. [`vaultwarden`](vaultwarden) - docker compose setup for a [VaultWarden](https://github.com/dani-garcia/vaultwarden) server, a community Bitwarden-compatible password manager backend
 
 
@@ -33,7 +33,7 @@ The `EXECUTION_ORDER` environment variable controls the order in which services 
 If `EXECUTION_ORDER` is not set in either file, `make run-update-all` will fail. Copy `.env.default` to `.env` and edit it to customize the order. The default order is:
 
 ```
-datastore-memory datastore-sql fusionauth beszel portainer actual plex-server arr-stack immich jenkins search-stack luna opencloud vaultwarden
+datastore-memory datastore-sql fusionauth beszel portainer actual plex-server arr-stack immich jenkins agents-stack luna opencloud vaultwarden
 ```
 
 ### How to run
