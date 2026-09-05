@@ -129,7 +129,7 @@ services:
       context: ${CRW_PATH}
       dockerfile: Dockerfile
       args:
-        CARGO_PKGS: "-p crw-server --features camoufox -p crw-mcp -p crw-cli"
+        CARGO_PKGS: "-p crw-server --features camoufox"
     container_name: crw
     restart: unless-stopped
     networks: [home-lab-net]
