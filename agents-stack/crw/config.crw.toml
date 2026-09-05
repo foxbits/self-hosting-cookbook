@@ -1,0 +1,31 @@
+[server]
+rate_limit_rps = 0
+
+[request]
+deadline_ms_default = 30000
+auto_extend_deadline_for_ladder = true
+
+[renderer]
+mode = "auto"
+http_timeout_ms = 10000
+
+[renderer.camoufox]
+base_url = "http://camofox:9377"
+include_in_auto = true
+camoufox_timeout_ms = 60000
+# api_key left unset — CRW_RENDERER__CAMOUFOX__API_KEY env wins (AppConfig precedence:
+# env > $CRW_CONFIG file > user config > config.default.toml).
+
+[search]
+searxng_url = "http://searxng:8080"
+timeout_ms = 30000
+# LLM-off deployment (D11): query expansion and calibrated answers need an LLM behind
+# them, so they stay off. Re-enable (true / 3 / true) together with [extraction.llm].
+query_expand = false
+answer_calibrated = false
+
+[document]
+sandbox = true
+
+[auth]
+# api_keys left unset — CRW_AUTH__API_KEYS env wins.

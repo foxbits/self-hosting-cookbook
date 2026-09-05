@@ -124,6 +124,39 @@ services:
       retries: 3
       start_period: 60s
 
+  crw:
+    build:
+      context: ${CRW_PATH}
+      dockerfile: Dockerfile
+      args:
+        CARGO_PKGS: "-p crw-server --features camoufox -p crw-mcp -p crw-cli"
+    container_name: crw
+    restart: unless-stopped
+    networks: [home-lab-net]
+    ports: ["9710:3000"]
+    env_file: [.env]
+    environment:
+      CRW_CONFIG: config.crw
+      CRW_RENDERER__CAMOUFOX__API_KEY: ${CAMOFOX_ACCESS_KEY}
+      CRW_AUTH__API_KEYS: ${CRW_API_KEY}
+    volumes: ["./crw/config.crw.toml:/app/config.crw.toml:ro"]
+    depends_on:
+      searxng: {condition: service_healthy}
+      camofox: {condition: service_healthy}
+    mem_limit: 2g
+    memswap_limit: 2g
+    pids_limit: 512
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/3000"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
 volumes:
   searxng-data:
     driver: local

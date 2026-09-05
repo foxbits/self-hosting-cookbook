@@ -17,6 +17,11 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
     - [API Endpoints for Camofox](#api-endpoints-for-camofox)
     - [Verifying the setup (Postman walkthrough)](#verifying-the-setup-postman-walkthrough)
     - [Importing browser cookies](#importing-browser-cookies)
+  - [crw (Firecrawl-compatible scrape/search)](#crw-firecrawl-compatible-scrapesearch)
+    - [API Endpoints for crw](#api-endpoints-for-crw)
+    - [Camofox integration and limits](#camofox-integration-and-limits)
+    - [LLM-backed outputs stay off](#llm-backed-outputs-stay-off)
+    - [Verifying crw](#verifying-crw)
   - [GPT Researcher Backend](#gpt-researcher-backend)
     - [API Endpoints for GPT Researcher](#api-endpoints-for-gpt-researcher)
     - [MCP Server for GPT Researcher](#mcp-server-for-gpt-researcher)
@@ -34,6 +39,7 @@ The setup starts the following services:
 - [open-crawl](https://github.com/foxbits/open-crawl) at port `9708`
 - [GPT Researcher](https://github.com/assafelovic/gpt-researcher) backend at port `9706`
 - [camofox-browser](https://github.com/jo-inc/camofox-browser) at port `9709` (stealth browser; see [Camofox Browser](#camofox-browser))
+- crw (Firecrawl-compatible scrape/search over plain HTTP with camofox stealth fallback) at port `9710` — can be accessed in browser at http://localhost:9710, or with `http://crw:3000` in `home-lab-net` (see [crw](#crw-firecrawl-compatible-scrapesearch))
 
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
 
@@ -67,6 +73,9 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `CAMOFOX_CRASH_REPORT_ENABLED`: anonymized crash telemetry to upstream (`false` for personal use).
 - `MAX_SESSIONS` / `MAX_TABS_PER_SESSION` / `MAX_TABS_GLOBAL` / `SESSION_TIMEOUT_MS` / `TAB_INACTIVITY_MS` / `BROWSER_IDLE_TIMEOUT_MS` / `HANDLER_TIMEOUT_MS` / `NAVIGATE_TIMEOUT_MS` / `MAX_CONCURRENT_PER_USER` / `MAX_OLD_SPACE_SIZE`: camofox sizing caps (18 tabs worst case fits the 4G limit / 3G shm at ~150MB per tab; a 24h idle window keeps the fingerprint stable (`0` does not mean never upstream — it fires immediately))
 - `CAMOFOX_SNAPSHOT_MAX_CHARS` / `CAMOFOX_SNAPSHOT_TAIL_CHARS` / `CAMOFOX_SNAPSHOT_MAX_NODES`: snapshot windowing (160K chars ≈ 40K tokens per observation; the tail preserves pagination/nav refs in every chunk; the nodes cap limits `[eN]` ref annotation — raise together)..
+- `CRW_PATH`: checkout of the crw source repo (build-from-source pattern, same as `GPT_RESEARCHER_PATH`/`OPENCRAWL_PATH`/`CAMOFOX_BROWSER_PATH`); the compose `build.context` points here and builds with `CARGO_PKGS="-p crw-server --features camoufox -p crw-mcp -p crw-cli"`. If the build fails with "none of the selected packages contains this feature", use the qualified form `-p crw-server --features crw-server/camoufox`.
+- `CRW_API_KEY`: bearer key guarding crw itself (`/v1/*` + `/mcp`); generate with `openssl rand -hex 32`. Public endpoints (`/health`, `/ready`, `/openapi.json`) stay unauthenticated.
+- `CRW_RENDERER__CAMOUFOX__API_KEY` is not set in `.env` — it is derived in `docker-compose.yml` as `${CAMOFOX_ACCESS_KEY}` (no new secret). If `POST /tabs` returns 401 with the access key, retry with `CAMOFOX_API_KEY` and rewire the mapping to whichever succeeds (see [Verifying crw](#verifying-crw)).
 
 ### GPT-Researcher Settings
 
@@ -131,6 +140,8 @@ Crawl4AI will be available at [http://localhost:9705](http://localhost:9705), or
 GPT Researcher will be available at [http://localhost:9706](http://localhost:9706), or with [http://gpt-researcher:8000](http://gpt-researcher:8000) in `home-lab-net`
 
 Camofox will be available at [http://localhost:9709](http://localhost:9709), or with [http://camofox:9377](http://camofox:9377) in `home-lab-net`
+
+crw will be available at [http://localhost:9710](http://localhost:9710), or with [http://crw:3000](http://crw:3000) in `home-lab-net`
 
 #### API Endpoints for SearXNG
 
@@ -256,6 +267,73 @@ Use this to reuse logins from your daily browser in an agent session. Import fir
 3. **Import.** `POST /sessions/:userId/cookies` with the JSON file as body — authenticated with `Authorization: Bearer <CAMOFOX_API_KEY>` (note: the API key, not the access key).
 4. **Use.** `POST /tabs` with the same `userId`, navigate to the site — you should arrive logged in. `chmod 0600` any cookie files you keep on disk.
 
+### crw (Firecrawl-compatible scrape/search)
+
+crw serves Firecrawl-compatible `/v1/scrape|search|crawl|map|extract` (plus `/v1/capabilities` and `/mcp`) on host port `9710` (container `3000`). Fetch ladder is `mode="auto"` with `include_in_auto=true`: plain HTTP first, failover to the existing `camofox:9377` stealth tier; search goes through the existing `searxng:8080`. It is built from source (`CRW_PATH`, `camoufox` feature only — no lightpanda/chrome/playwright/CDP). Config is the bind-mounted `crw/config.crw.toml`, selected via `CRW_CONFIG=config.crw` (bare stem — `config::File::with_name` appends `.toml`). The first build is slow (Rust + cargo-chef) and reuses the dependency layer unless manifests/`CARGO_PKGS` change.
+
+#### API Endpoints for crw
+
+Authenticated calls need `Authorization: Bearer <CRW_API_KEY>` (everything under `/v1/*` plus `/mcp`). `/health`, `/ready`, and `/openapi.json` stay public.
+
+| Endpoint | Description | Auth |
+|----------|-------------|------|
+| `GET /health` | Liveness probe (cheap, never touches renderers) | none |
+| `GET /ready` | Readiness probe (checks renderers; 503s when camofox is down — do NOT use as the compose healthcheck) | none |
+| `GET /openapi.json` | Machine-readable API spec | none |
+| `POST /v1/scrape {"url": "...", "formats": ["markdown"]}` | Scrape one URL to markdown | bearer `CRW_API_KEY` |
+| `POST /v1/scrape {"url": "...", "renderer": "camoufox", "formats": ["markdown"]}` | Scrape pinned to the camofox tier | bearer `CRW_API_KEY` |
+| `POST /v1/search {"query": "...", "limit": 5}` | Web search via searxng | bearer `CRW_API_KEY` |
+| `POST /v1/crawl {"url": "..."}` | Crawl a site (fan-out over the same HTTP→camofox ladder) | bearer `CRW_API_KEY` |
+| `POST /v1/map {"url": "..."}` | Map/discover URLs for a site (search-enriched) | bearer `CRW_API_KEY` |
+| `POST /v1/extract {"urls": ["..."]}` | Extract page content (plain markdown; no LLM schema mode — see below) | bearer `CRW_API_KEY` |
+| `GET /v1/capabilities` | Lists enabled tiers — must include `camoufox` (proves the `camoufox` cargo feature was compiled in) | bearer `CRW_API_KEY` |
+| `/mcp` | MCP endpoint for agents | bearer `CRW_API_KEY` |
+
+Compose healthcheck is a bash `/dev/tcp` liveness probe on `3000` (the runtime image has no curl/wget; `bash` exists in `bookworm-slim`), never `/ready` (which flaps with the sidecar).
+
+#### Camofox integration and limits
+
+- Ladder: `mode="auto"` + `include_in_auto=true` + non-empty `base_url` is the only way into the auto chain. A configured-but-default (`false`) tier stays reachable solely via explicit `renderer="camoufox"` pins. `mode="camoufox"` (pin everything) is intentionally not used — HTTP stays first.
+- Contract: crw calls `POST /tabs {userId, sessionKey, url}` → `POST /tabs/{id}/evaluate {userId, expression="document.documentElement.outerHTML"}` → `DELETE /sessions/{userId}`, plus a `GET /health` probe. The evaluate response shape is `{ok, result}` where `result` is the HTML string. Upstream `jo-inc/camofox-browser` exposes `POST /tabs/{tabId}/evaluate` (see its `docs/openapi.json`); if the fork predates it or the native locale/geo patch broke it, the tier cannot work — rebase/patch the fork (the [Verifying crw](#verifying-crw) guide surfaces this first).
+- Response-size cap: `CAMOFOX_EVALUATE_MAX_BODY_SIZE` (default `1mb`) bounds the evaluate payload on the camofox side.
+- Known gaps (accepted — HTTP+camofox only, CDP removed):
+  - No screenshots: `formats:["screenshot"]` hard-errors with only camoufox configured.
+  - No cookie carryover: crw mints a fresh random session per request and deletes it on a fixed 5s budget even on error, so imported cookies (`POST /sessions/:userId/cookies`) never apply.
+  - No proxy rotation on the JS path and no CDP `Fetch` resource blocking (camofox loads the page itself — slower/heavier); HTTP-tier stealth headers/UA rotation still apply. No new proxy needed (direct residential egress, same as camofox today).
+  - No readiness wait: crw does create→immediate evaluate. It never calls camofox `POST /tabs/:id/wait`, so thin SPAs may return empty/challenge HTML and fail. `wait_for_ms` and custom headers are ignored on this tier — tune `camoufox_timeout_ms` (60s default) + request `deadlineMs` instead of expecting networkidle.
+  - Sidecar saturation: each crw request costs 1 camofox session + 1 tab against `MAX_SESSIONS=15 / MAX_TABS_GLOBAL=18`. Concurrent crawls (crw `max_concurrency=10` + fan-out) can exhaust the sidecar → 429/503. Cap crw concurrency first, raise camofox caps second.
+- Auth mapping: crw sends one bearer (`CRW_RENDERER__CAMOUFOX__API_KEY`, derived from `CAMOFOX_ACCESS_KEY`) on every camofox call including `GET /health`. crw never calls cookie import or `/stop`, so `CAMOFOX_API_KEY` / `CAMOFOX_ADMIN_KEY` are otherwise irrelevant to it.
+
+#### LLM-backed outputs stay off
+
+This deployment wires no `[extraction.llm]` section (intentional — crw LLM wiring is out of scope):
+
+- `formats:["summary"]`, `formats:["json"]` with a `jsonSchema`, and `answer:true` / summarize paths return HTTP 400 pointing at `CRW_EXTRACTION__LLM__API_KEY`.
+- `query_expand` stays `false` and `answer_calibrated` stays `false` in `crw/config.crw.toml` (both need an LLM behind them; re-enable together with `[extraction.llm]` later).
+- Scope is plain markdown + search-only until LLM wiring becomes a separate change.
+
+#### Verifying crw
+
+Run these on the deploy host (Docker available). Modelled on the camofox Postman walkthrough above: part (a) proves the camofox contract crw depends on, part (b) smokes crw itself. Stop at the first failure — do not trust the tier until (a) passes.
+
+(a) Camofox contract check (base URL `http://<host>:9709`):
+
+1. **Spec check** — `GET http://<host>:9709/openapi.json` and confirm it contains `/tabs/{tabId}/evaluate`. If absent: STOP — rebase/patch the fork (or change crw to snapshot, out of scope).
+2. **Create a tab** — `POST /tabs` with `Authorization: Bearer $CAMOFOX_ACCESS_KEY`, body `{"userId": "crw-smoke", "sessionKey": "crw-smoke", "url": "https://example.com"}`. Note the tab id. If 401, retry with `Authorization: Bearer $CAMOFOX_API_KEY`; whichever succeeds is the key crw must use — rewire `CRW_RENDERER__CAMOUFOX__API_KEY` in compose to the winner and document it in `.env`.
+3. **Evaluate** — `POST /tabs/:id/evaluate` (same bearer as step 2), body `{"userId": "crw-smoke", "expression": "document.documentElement.outerHTML"}`. Expect `{ok: true, result: "<html>..."}`.
+4. **Cleanup** — `DELETE /sessions/crw-smoke` (same bearer). Expect 200.
+5. **Bearer health** — `GET /health` with the same bearer. Expect 200 (if a bearer-gated `/health` ever 401s here, crw's `is_available()` stays false and the tier is skipped).
+
+(b) crw smokes (base URL `http://<host>:9710`, bearer `CRW_API_KEY` unless noted):
+
+1. **Liveness (open)** — `GET /health` with no auth. Expect 200.
+2. **Capabilities** — `GET /v1/capabilities` with `Authorization: Bearer $CRW_API_KEY`. Expect 200 listing `camoufox` (plus the startup log line `camoufox tier enabled`). If `camoufox` is missing, the image was built without the feature — rebuild with `CARGO_PKGS="-p crw-server --features camoufox -p crw-mcp -p crw-cli"` (fallback: `-p crw-server --features crw-server/camoufox`).
+3. **Search** — `POST /v1/search` with bearer, body `{"query": "self-hosted metasearch engine", "limit": 5}`. Expect 200 with results (proves `http://searxng:8080` wiring).
+4. **Auto scrape** — `POST /v1/scrape` with bearer, body `{"url": "https://example.com", "formats": ["markdown"]}`. Expect 200 with markdown.
+5. **Pinned scrape** — `POST /v1/scrape` with bearer, body `{"url": "https://example.com", "renderer": "camoufox", "formats": ["markdown"]}`. Expect 200 with markdown (proves the camofox tier end to end).
+6. **Negative LLM check** — `POST /v1/scrape` with bearer, body `{"url": "https://example.com", "formats": ["markdown"], "answer": true}` (or a schema-`json` extract). Expect HTTP 400 (LLM off by design — see above).
+7. **Session-leak check** — `GET http://<host>:9709/tabs?userId=crw-smoke` with `Authorization: Bearer $CAMOFOX_ACCESS_KEY` (the camofox bearer, not `CRW_API_KEY`). Expect an empty list — crw deletes its random session per request, so no tabs may linger.
+
 ### GPT Researcher Backend
 
 GPT Researcher is an autonomous agent that conducts deep research on any topic using LLM providers. The backend exposes REST API endpoints and an MCP server for integration with other AI assistants.
@@ -321,6 +399,8 @@ The scraper is configurable via the `SCRAPER` environment variable:
 
 The configuration and data will be stored in these docker volumes: [`searxng-data`], [`gpt-researcher-data`], [`camofox-profiles`], [`camofox-traces`] and in these directories: [`./searxng/core-config`], [`./camofox/cookies`], [`./camofox/uploads`] - so this is what you have to back-up. Note `camofox-traces` holds screenshots/DOM/network captures and `camofox-profiles` holds live session cookies — both are sensitive, treat backups accordingly.
 
+crw is stateless — only `crw/config.crw.toml` needs backing up (versioned in git; no named volume, no runtime data dir).
+
 ### Security
 
 - Camofox publishes host port `9709`: keep `CAMOFOX_ACCESS_KEY` set (all routes except `/health` require it) and do not expose the port beyond your LAN without a reverse proxy with authentication.
@@ -328,3 +408,4 @@ The configuration and data will be stored in these docker volumes: [`searxng-dat
 - Cookie files in `./camofox/cookies` are live session secrets: `chmod 0600` every file you place there (the mount itself is read-only and the import endpoint additionally requires `CAMOFOX_API_KEY`).
 - `POST /stop` (stops the whole browser engine) requires `CAMOFOX_ADMIN_KEY`.
 - Crash telemetry is disabled (`CAMOFOX_CRASH_REPORT_ENABLED=false`); upstream it reports anonymized failure data to the vendor.
+- crw publishes host port `9710`: keep it LAN-only, keep `CRW_API_KEY` set (all `/v1/*` + `/mcp` routes require it; only `/health`, `/ready`, `/openapi.json` are public), and do not expose the port beyond your LAN without a reverse proxy with authentication. The container runs `read_only: true` with `tmpfs: [/tmp]`, `cap_drop: [ALL]`, and `no-new-privileges` hardening.
