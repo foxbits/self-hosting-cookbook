@@ -15,12 +15,15 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
   - [Camofox Browser](#camofox-browser)
     - [Browser identity (locale/timezone/geolocation)](#browser-identity-localetimezonegeolocation)
     - [API Endpoints for Camofox](#api-endpoints-for-camofox)
+    - [Verifying the setup (Postman walkthrough)](#verifying-the-setup-postman-walkthrough)
+    - [Importing browser cookies](#importing-browser-cookies)
   - [GPT Researcher Backend](#gpt-researcher-backend)
     - [API Endpoints for GPT Researcher](#api-endpoints-for-gpt-researcher)
     - [MCP Server for GPT Researcher](#mcp-server-for-gpt-researcher)
     - [Image Generation](#image-generation)
     - [Scraper Configuration](#scraper-configuration)
   - [Back-up](#back-up)
+  - [Security](#security)
 
 
 ## Understanding the setup
@@ -228,6 +231,30 @@ All tab endpoints are scoped by `userId` in the body (or query for `GET`s). Full
 | `DELETE /sessions/:userId` | Close all tabs for a user | JSON |
 
 Authenticated calls need `Authorization: Bearer <CAMOFOX_ACCESS_KEY>` (everything except `/health`).
+
+#### Verifying the setup (Postman walkthrough)
+
+Base URL `http://<host>:9709`. Set auth once (Authorization tab → Bearer Token → your `CAMOFOX_ACCESS_KEY`); all requests below inherit it.
+
+> This sequence is the real agent loop in miniature: every automated task runs create → navigate → wait → snapshot (→ act via click/type → re-snapshot) → cleanup. Walking it once in Postman verifies exactly what your agents will rely on.
+
+1. **Create a tab** — `POST /tabs`, body `{"userId": "smoke"}`. Note the tab id from the response.
+2. **Navigate** — `POST /tabs/:id/navigate`, body `{"userId": "smoke", "url": "https://browserscan.net"}`. This only waits for `domcontentloaded`, so the page (especially SPAs) is usually still rendering when it returns.
+3. **Wait for readiness** — `POST /tabs/:id/wait`, body `{"userId": "smoke", "timeout": 15000}`. Blocks through network-idle, hydration polling, and a settle delay; returns `{"ok": true, "ready": true/false}`. Proceed on `true`; after a `false` you still get whatever rendered so far.
+4. **Read the snapshot** — `GET /tabs/:id/snapshot?userId=smoke`. Expect: the IP, language, timezone and location coordinates that you set, `Proxy: No`, `Bot Detection: No`. If the response has `"truncated": true`, page through it with `?userId=smoke&offset=<nextOffset>` until `"hasMore": false`; if it's nearly empty, `wait` again and re-request (no re-navigate needed).
+5. **Clean up** — `DELETE /sessions/smoke`.
+
+#### Importing browser cookies
+
+Use this to reuse logins from your daily browser in an agent session. Import first, then open tabs with the same `userId` — the tabs pick the cookies up.
+
+1. **Export from Brave.** Brave encrypts cookies at rest, so copy-pasting its SQLite file does not work. Install the open-source "Get cookies.txt LOCALLY" extension (exports locally, nothing is uploaded), open the site, and export to `cookies.txt` (Netscape format).
+2. **Convert to JSON.** The import endpoint takes `{"cookies": [{"name", "value", "domain", ...}]}` (max 500 per request). Convert with the bundled script (Python 3, stdlib only):
+   ```bash
+   python camofox/cookies-to-json.py cookies.txt -o cookies.json
+   ```
+3. **Import.** `POST /sessions/:userId/cookies` with the JSON file as body — authenticated with `Authorization: Bearer <CAMOFOX_API_KEY>` (note: the API key, not the access key).
+4. **Use.** `POST /tabs` with the same `userId`, navigate to the site — you should arrive logged in. `chmod 0600` any cookie files you keep on disk.
 
 ### GPT Researcher Backend
 
