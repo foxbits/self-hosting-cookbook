@@ -76,7 +76,7 @@ Current host ports in use:
 ```
 2283 immich | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
 7878 radarr | 8090 beszel | 8191 flaresolverr | 8989 sonarr | 9117 jackett (arr-stack)
-9701 fusionauth | 9704 searxng | 9705 crawl4ai | 9706 gpt-researcher | 9707 luna | 9708 open-crawl
+9701 fusionauth | 9704 searxng | 9705 crawl4ai | 9706 gpt-researcher | 9707 luna | 9708 open-crawl | 9709 camofox (agents-stack)
 9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud | 9864 vaultwarden
 ```
 (plex-server uses `network_mode: host` and the host's own 32400 — a special case; avoid unless
@@ -139,6 +139,11 @@ Committed example values with inline comments. The user copies it to `.env` (git
 edits. Include every env var the service needs. Use `CHANGE_ME`/placeholder values for secrets
 and document how to generate real ones (e.g. `# generate with: openssl rand -hex 32`).
 Comment out optional vars.
+
+Keep comments minimal: values plus at most a one-line generation hint or a
+"must match X" sync note. Do not explain variables here — every key in
+`.env.default` must instead be documented in the service `README.md`
+environment-variables section.
 
 ### 3. `Makefile`
 
@@ -255,6 +260,8 @@ The root `Makefile`'s `run-update-all` iterates `EXECUTION_ORDER`, runs each ser
 - [ ] The `AGENTS.md` **Port allocation** list has been updated with the new service's port.
 - [ ] `container_name`, directory name, and `EXECUTION_ORDER` entry all match.
 - [ ] `.gitignore` covers `.env` and any runtime data dir.
+- [ ] Every `.env.default` key is documented in the service `README.md`
+      environment-variables section (comments in `.env.default` stay minimal).
 - [ ] Root `README.md` list is sequentially numbered 1..N and the "default order is:" block
       matches root `.env.default`'s `EXECUTION_ORDER`.
 - [ ] `make run-update` (from the service dir) brings the stack up and it reports healthy.

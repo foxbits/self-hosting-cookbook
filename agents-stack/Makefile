@@ -24,7 +24,7 @@ generate-settings:
 
 build:
 	docker compose pull
-	docker compose build
+	docker compose build --pull
 
 run:
 	$(MAKE) generate-settings

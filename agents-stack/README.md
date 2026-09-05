@@ -1,4 +1,4 @@
-This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend, [camofox-browser](https://github.com/jo-inc/camofox-browser) - anti-detection browser for agents (Camoufox engine) with native locale/timezone/geolocation identifiers matching the home residential IP
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -12,6 +12,9 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
     - [Categories available for SearXNG](#categories-available-for-searxng)
   - [MCP Server for Crawl4AI](#mcp-server-for-crawl4ai)
     - [API Endpoints for Crawl4AI](#api-endpoints-for-crawl4ai)
+  - [Camofox Browser](#camofox-browser)
+    - [Browser identity (locale/timezone/geolocation)](#browser-identity-localetimezonegeolocation)
+    - [API Endpoints for Camofox](#api-endpoints-for-camofox)
   - [GPT Researcher Backend](#gpt-researcher-backend)
     - [API Endpoints for GPT Researcher](#api-endpoints-for-gpt-researcher)
     - [MCP Server for GPT Researcher](#mcp-server-for-gpt-researcher)
@@ -27,6 +30,7 @@ The setup starts the following services:
 - [crawl4ai](https://docs.crawl4ai.com/) at port `9705`
 - [open-crawl](https://github.com/foxbits/open-crawl) at port `9708`
 - [GPT Researcher](https://github.com/assafelovic/gpt-researcher) backend at port `9706`
+- [camofox-browser](https://github.com/jo-inc/camofox-browser) at port `9709` (stealth browser; see [Camofox Browser](#camofox-browser))
 
 This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`).
 
@@ -41,10 +45,24 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `SEARXNG_BASE_URL`: the URL you will be accessing the SearXNG instance from a browser, it is usually either `http://localhost:9704` or `http://my-local-server-address:9704`. Service-to-service communication is not affected by this URL. It is not advisable to expose your instance publicly (or at least protect it with a reverse proxy with authentication)
 - `LOCALE`: the language ISO code used by default in the SearXNG UI and results (e.g. `en`)
 - `COUNTRY_CODE`: the country ISO code used by default by SearXNG results (e.g. `US`)
+- `SEARXNG_REDIS_URL`: Valkey/Redis URL for rate limiting and caching (points at `datastore-memory` on `home-lab-net`)
+- `FORCE_OWNERSHIP`: take ownership of the mounted config dir on start (needed for the generated `settings.yml`)
+- `LOG_LEVEL`: SearXNG log verbosity
 - `SEARXNG_SECRET`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
+- `WOLFRAM_DISABLED`: set to `false` only if you provide a `WOLFRAM_API_KEY` below
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
 - `MAX_CONCURRENT_TASKS`: Depends on the allowed number of concurrent tasks for a crawl, number must be considered with the formula agent count x parallel tasks x 150MB depending on the RAM you allocate and the number of agents you plan to use. Default is 10.
 - `CRAWL4AI_API_TOKEN`: Random token to protect the crawl4ai instance; can use `openssl rand -hex 32` to generate
+- `CAMOFOX_BROWSER_PATH`: checkout of the camofox-browser fork (with the native locale/geo identifier patch); built with the official `Dockerfile.ci`, same as `GPT_RESEARCHER_PATH`/`OPENCRAWL_PATH`. Keep the fork rebased on upstream releases.
+- `CAMOUFOX_VERSION` / `CAMOUFOX_RELEASE`: Camoufox engine pinned to the latest `daijro/camoufox` release (tag `v<VERSION>-<RELEASE>`); refresh from the releases page. Note upstream pins older engines per app release, so smoke-test after bumping (browserscan check below).
+- `CAMOFOX_ACCESS_KEY` / `CAMOFOX_API_KEY` / `CAMOFOX_ADMIN_KEY`: bearer keys for the camofox API (global access / cookie import / `POST /stop`); generate with `openssl rand -hex 32`.
+- `CAMOFOX_LOCALES`: browser language override at native Camoufox fingerprint level (first entry used for Intl/Accept-Language). Default `ro-RO,ro,en-US,en`.
+- `TZ`: container-local timezone, must match `CAMOFOX_TIMEZONE`. Lives in `.env`, so every stack service sharing it adopts Bucharest local time.
+- `CAMOFOX_TIMEZONE` / `CAMOFOX_LATITUDE` / `CAMOFOX_LONGITUDE`: browser timezone and coordinates at native Camoufox fingerprint level. Must match the public geolocation of the home IP (verify against an IP-geolocation lookup; re-check if the IP ever changes region). Must stay unset if `PROXY_HOST` is ever used — the server refuses to start otherwise.
+- `PROXY_HOST` / `PROXY_PORT`: unset. Setting them re-enables GeoIP-derived timezone/coordinates and requires a proxy sidecar plus unsetting the three manual vars above.
+- `CAMOFOX_PROFILE_DIR` / `CAMOFOX_TRACES_DIR` / `CAMOFOX_COOKIES_DIR` / `CAMOFOX_UPLOADS_DIR`: state dirs inside the container (named volumes / bind mounts).
+- `CAMOFOX_CRASH_REPORT_ENABLED`: anonymized crash telemetry to upstream (`false` for personal use).
+- `MAX_SESSIONS` / `MAX_TABS_PER_SESSION` / `MAX_TABS_GLOBAL` / `SESSION_TIMEOUT_MS` / `TAB_INACTIVITY_MS` / `BROWSER_IDLE_TIMEOUT_MS` / `HANDLER_TIMEOUT_MS` / `NAVIGATE_TIMEOUT_MS` / `MAX_CONCURRENT_PER_USER` / `MAX_OLD_SPACE_SIZE`: camofox sizing caps (12 tabs worst case fits the 3G limit; the browser never idle-kills so the fingerprint stays stable).
 
 ### GPT-Researcher Settings
 
@@ -52,11 +70,15 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the fol
 
 - `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
 - `LANGUAGE`: The language to generate the response in
+- `RETRIEVER`: search backend for GPT Researcher (`searx` = local SearXNG)
+- `SEARX_URL`: in-network URL of SearXNG used by the retriever
+- `OPENCRAWL_PATH`: checkout of the open-crawl Tavily-compatible proxy over crawl4ai (see pre-requisites below)
 - `CURATE_SOURCES`: Whether to curate sources for research. This step adds an LLM run which may increase costs and total run time but improves quality of source selection
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the Open-AI compatible LLM API
 - `FAST_LLM`: Model used for very fast operations with OK intelligence (default: `xiaomi/mimo-v2-flash`), must be prefixed by the provider, e.g. `openai:`
 - `SMART_LLM`: Model used for comprehensive research and the report generation (needs to be high in intelligence), must be prefixed by the provider, e.g. `openai:`
+- `SMART_TOKEN_LIMIT`: token budget for the smart LLM
 - `STRATEGIC_LLM`: Model used to generate plan and delegate tasks, needs to support structured outputs and tool calling, must be prefixed by the provider, e.g. `openai:`
 - `EMBEDDING`: Embedding model for text vectorization, must be prefixed by the provider, e.g. `openai:`
 - `MAX_SEARCH_RESULTS_PER_QUERY`: Maximum number of search results to retrieve per query
@@ -103,6 +125,8 @@ SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or 
 Crawl4AI will be available at [http://localhost:9705](http://localhost:9705), or with [http://crawl4ai:11235](http://crawl4ai:11235) in `home-lab-net`
 
 GPT Researcher will be available at [http://localhost:9706](http://localhost:9706), or with [http://gpt-researcher:8000](http://gpt-researcher:8000) in `home-lab-net`
+
+Camofox will be available at [http://localhost:9709](http://localhost:9709), or with [http://camofox:9377](http://camofox:9377) in `home-lab-net`
 
 #### API Endpoints for SearXNG
 
@@ -159,6 +183,50 @@ For dynamic websites, add in the request body:
 For the `/md` request, use `"f": "raw"` in the body to get the unfit markdown (sometimes the fitting process strips wrong parts of websites, even important ones).
 For the `/crawl` request, you can let the agent use the `raw_markdown` content, which is the unfit one and contains also links to media (separately, media is also in the `media` object).
 
+
+### Camofox Browser
+
+Camofox is an anti-detection headless browser (Camoufox engine: C++-level fingerprint spoofing) driven over a REST API built for agents: accessibility snapshots with stable element refs (`e1`, `e2`, …) instead of bloated HTML, plus search macros. It is built from a fork (`CAMOFOX_BROWSER_PATH`, official `Dockerfile.ci`) that adds native locale/geo identifier support; keep the fork rebased on upstream app releases and re-verify the identifiers below after each rebase or engine bump.
+
+Camofox traffic goes straight out the home residential connection, and the browser identifiers are set explicitly at native Camoufox fingerprint level (patched `launchOptions`: `locale` + `config` with timezone/geolocation, mirrored into the Playwright session context). No proxy is involved.
+
+#### Browser identity (locale/timezone/geolocation)
+
+Manual identifiers by default, proxy-derived geography as the opt-in alternative:
+
+| Mode | Timezone | Coordinates / WebRTC IP | Locale |
+|------|----------|-------------------------|--------|
+| Manual (normal) | `CAMOFOX_TIMEZONE` | `CAMOFOX_LATITUDE` / `CAMOFOX_LONGITUDE` (WebRTC follows the real residential IP) | `CAMOFOX_LOCALES` |
+| Proxy configured (alternative) | Camoufox GeoIP (from residential exit IP) | Camoufox GeoIP | `CAMOFOX_LOCALES` if set, else GeoIP |
+
+Manually overriding timezone/coordinates while the proxy is active is rejected at startup (that combination is exactly the inconsistency Camoufox exists to avoid). Production config is `CAMOFOX_LOCALES=ro-RO,ro,en-US,en` with `CAMOFOX_TIMEZONE=Europe/Bucharest`, Iasi coordinates, and `TZ=Europe/Bucharest` on the container: Romanian geography with Romanian-first, English-capable browser language — fully plausible on a Romanian residential IP.
+
+Verify after first start: warm the engine so no agent request pays cold start (`curl -X POST -H "Authorization: Bearer $CAMOFOX_ACCESS_KEY" http://localhost:9709/start`), then create a tab on `https://browserscan.net` and confirm timezone `Europe/Bucharest`, language starting with `ro-RO`, and coordinates near Iasi.
+
+#### API Endpoints for Camofox
+
+All tab endpoints are scoped by `userId` in the body (or query for `GET`s). Full machine-readable spec at `http://localhost:9709/openapi.json`, interactive docs at `http://localhost:9709/docs`.
+
+| Endpoint | Description | Format |
+|----------|-------------|--------|
+| `POST /tabs {userId, sessionKey, url?}` | Create tab (optional initial URL) | JSON |
+| `GET /tabs?userId=X` | List open tabs | JSON |
+| `GET /tabs/:id/snapshot?userId=X&offset=N&includeScreenshot=true` | Accessibility snapshot with element refs (paginated) | Text/JSON |
+| `POST /tabs/:id/navigate {userId, url}` or `{macro, query}` | Navigate to URL or search macro (`@google_search`, `@youtube_search`, …) | Snapshot |
+| `POST /tabs/:id/click {userId, ref}` | Click element by ref (`e1`) or selector | Snapshot |
+| `POST /tabs/:id/type {userId, ref, text}` | Type into element | Snapshot |
+| `POST /tabs/:id/press {userId, key}` | Press keyboard key | JSON |
+| `POST /tabs/:id/scroll {userId, direction}` | Scroll page | JSON |
+| `POST /tabs/:id/wait {userId, selector?, timeout?}` | Wait for selector/timeout | JSON |
+| `POST /tabs/:id/back|forward|refresh {userId}` | History navigation | JSON |
+| `GET /tabs/:id/links|images|downloads|screenshot?userId=X` | Extract links/images/downloads, capture PNG | JSON |
+| `POST /tabs/:id/extract {userId, schema}` | Structured extract via JSON Schema with `x-ref` hints | JSON |
+| `POST /youtube/transcript {url, languages}` | YouTube captions via yt-dlp (no API key) | JSON |
+| `GET /health` | Health check (no auth) | JSON |
+| `POST /sessions/:userId/cookies` | Import cookies (requires `CAMOFOX_API_KEY`) | JSON |
+| `DELETE /sessions/:userId` | Close all tabs for a user | JSON |
+
+Authenticated calls need `Authorization: Bearer <CAMOFOX_ACCESS_KEY>` (everything except `/health`).
 
 ### GPT Researcher Backend
 
@@ -223,4 +291,12 @@ The scraper is configurable via the `SCRAPER` environment variable:
 
 ### Back-up
 
-The configuration and data will be stored in these docker volumes: [`searxng-data`], [`gpt-researcher-data`] and in these directories: [`./searxng/core-config`] - so this is what you have to back-up.
+The configuration and data will be stored in these docker volumes: [`searxng-data`], [`gpt-researcher-data`], [`camofox-profiles`], [`camofox-traces`] and in these directories: [`./searxng/core-config`], [`./camofox/cookies`], [`./camofox/uploads`] - so this is what you have to back-up. Note `camofox-traces` holds screenshots/DOM/network captures and `camofox-profiles` holds live session cookies — both are sensitive, treat backups accordingly.
+
+### Security
+
+- Camofox publishes host port `9709`: keep `CAMOFOX_ACCESS_KEY` set (all routes except `/health` require it) and do not expose the port beyond your LAN without a reverse proxy with authentication.
+- There is no egress sidecar: traffic leaves directly via the home connection, so nothing extra needs shielding.
+- Cookie files in `./camofox/cookies` are live session secrets: `chmod 0600` every file you place there (the mount itself is read-only and the import endpoint additionally requires `CAMOFOX_API_KEY`).
+- `POST /stop` (stops the whole browser engine) requires `CAMOFOX_ADMIN_KEY`.
+- Crash telemetry is disabled (`CAMOFOX_CRASH_REPORT_ENABLED=false`); upstream it reports anonymized failure data to the vendor.

@@ -2,3 +2,7 @@ searxng/*
 !searxng/core-config/
 searxng/core-config/*
 !searxng/core-config/.gitkeep
+camofox/cookies/*
+!camofox/cookies/.gitkeep
+camofox/uploads/*
+!camofox/uploads/.gitkeep

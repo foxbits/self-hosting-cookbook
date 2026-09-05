@@ -85,10 +85,49 @@ services:
       retries: 3
       start_period: 60s
 
+  camofox:
+    build:
+      context: ${CAMOFOX_BROWSER_PATH}
+      dockerfile: Dockerfile.ci
+      args:
+        CAMOUFOX_VERSION: ${CAMOUFOX_VERSION}
+        CAMOUFOX_RELEASE: ${CAMOUFOX_RELEASE}
+    container_name: camofox
+    restart: unless-stopped
+    networks:
+      - home-lab-net
+    ports:
+      - "9709:9377"
+    env_file:
+      - .env
+    volumes:
+      - camofox-profiles:/data/profiles
+      - camofox-traces:/data/traces
+      - ./camofox/cookies:/data/cookies:ro
+      - ./camofox/uploads:/data/uploads
+    init: true
+    shm_size: '2g' # Firefox needs shared memory; 2g is enough for a few parallel tabs
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9377/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   searxng-data:
     driver: local
   gpt-researcher-data:
+    driver: local
+  camofox-profiles:
+    driver: local
+  camofox-traces:
     driver: local
 
 networks:
