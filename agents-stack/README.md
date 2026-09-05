@@ -62,7 +62,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `PROXY_HOST` / `PROXY_PORT`: unset. Setting them re-enables GeoIP-derived timezone/coordinates and requires a proxy sidecar plus unsetting the three manual vars above.
 - `CAMOFOX_PROFILE_DIR` / `CAMOFOX_TRACES_DIR` / `CAMOFOX_COOKIES_DIR` / `CAMOFOX_UPLOADS_DIR`: state dirs inside the container (named volumes / bind mounts).
 - `CAMOFOX_CRASH_REPORT_ENABLED`: anonymized crash telemetry to upstream (`false` for personal use).
-- `MAX_SESSIONS` / `MAX_TABS_PER_SESSION` / `MAX_TABS_GLOBAL` / `SESSION_TIMEOUT_MS` / `TAB_INACTIVITY_MS` / `BROWSER_IDLE_TIMEOUT_MS` / `HANDLER_TIMEOUT_MS` / `NAVIGATE_TIMEOUT_MS` / `MAX_CONCURRENT_PER_USER` / `MAX_OLD_SPACE_SIZE`: camofox sizing caps (12 tabs worst case fits the 3G limit; the browser never idle-kills so the fingerprint stays stable).
+- `MAX_SESSIONS` / `MAX_TABS_PER_SESSION` / `MAX_TABS_GLOBAL` / `SESSION_TIMEOUT_MS` / `TAB_INACTIVITY_MS` / `BROWSER_IDLE_TIMEOUT_MS` / `HANDLER_TIMEOUT_MS` / `NAVIGATE_TIMEOUT_MS` / `MAX_CONCURRENT_PER_USER` / `MAX_OLD_SPACE_SIZE`: camofox sizing caps (18 tabs worst case fits the 4G limit / 3G shm at ~150MB per tab; the browser never idle-kills so the fingerprint stays stable).
 
 ### GPT-Researcher Settings
 

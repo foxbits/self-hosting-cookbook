@@ -32,6 +32,8 @@ services:
     env_file:
       - .env
     shm_size: '3g' # agents count x parallel tabs x 150MB
+    mem_limit: 4g
+    mem_reservation: 1g
     deploy:
       resources:
         limits:
@@ -106,13 +108,15 @@ services:
       - ./camofox/cookies:/data/cookies:ro
       - ./camofox/uploads:/data/uploads
     init: true
-    shm_size: '2g' # Firefox needs shared memory; 2g is enough for a few parallel tabs
+    shm_size: '3g' # Firefox needs shared memory; 3g fits ~18 parallel tabs x 150MB
+    mem_limit: 4g
+    mem_reservation: 1g
     deploy:
       resources:
         limits:
-          memory: 3G
+          memory: 4G
         reservations:
-          memory: 512M
+          memory: 1G
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:9377/health || exit 1"]
       interval: 30s
