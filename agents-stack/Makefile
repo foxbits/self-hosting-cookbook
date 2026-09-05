@@ -1,4 +1,4 @@
-.PHONY: pull run run-update update-run generate-settings
+.PHONY: pull build pull-repos run run-update update-run generate-settings
 
 SEARXNG_DIR := searxng/core-config
 TEMPLATE := ./settings-template.yml
@@ -26,12 +26,28 @@ build:
 	docker compose pull
 	docker compose build --pull
 
+pull-repos:
+	@set -e; \
+	ORIG_DIR=$$(pwd); \
+	set -a; \
+	if [ -f $(ENV_FILE) ]; then . ./$(ENV_FILE); else . ./.env.default; fi; \
+	set +a; \
+	echo "Updating $$GPT_RESEARCHER_PATH..."; \
+	cd "$$GPT_RESEARCHER_PATH" && git pull && cd "$$ORIG_DIR"; \
+	echo "Updating $$OPENCRAWL_PATH..."; \
+	cd "$$OPENCRAWL_PATH" && git pull && cd "$$ORIG_DIR"; \
+	echo "Updating $$CAMOFOX_BROWSER_PATH..."; \
+	cd "$$CAMOFOX_BROWSER_PATH" && git pull && cd "$$ORIG_DIR"; \
+	echo "Updating $$CRW_PATH..."; \
+	cd "$$CRW_PATH" && git pull && cd "$$ORIG_DIR";
+
 run:
 	$(MAKE) generate-settings
 	docker compose down
 	docker compose up -d
 
 run-update:
+	$(MAKE) pull-repos
 	$(MAKE) build
 	$(MAKE) run
 

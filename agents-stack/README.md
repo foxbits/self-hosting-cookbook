@@ -119,7 +119,9 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the fol
 2. This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
 3. On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
 4. For GPT Researcher, this stack (temporarily) uses a fork of it, to be able to use crawl4ai as engine (and some embeddings fixes), therefore you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and set the path to it through `GPT_RESEARCHER_PATH`.
-5. For Crawl4AI, this stach also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy on top of crawl4ai that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
+5. For Crawl4AI, this stack also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy on top of crawl4ai that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
+6. For Camofox, clone the camofox-browser fork (with the native locale/geo identifier patch) and set the path to it through `CAMOFOX_BROWSER_PATH`.
+7. For crw, clone the crw repository and set the path to it through `CRW_PATH`.
 
 
 ### Starting the stack
@@ -130,8 +132,9 @@ Make sure that you setup the environment variables correctly.
 
 Then use:
 - `make build` - to update the stack images to latest version
+- `make pull-repos` - to `git pull` the source checkouts this stack builds from (`GPT_RESEARCHER_PATH`, `OPENCRAWL_PATH`, `CAMOFOX_BROWSER_PATH`, `CRW_PATH`); they must already be cloned at those paths (see pre-requisites above)
 - `make run` - to just run the system (basic docker compose up command)
-- `make run-update` - to first update the stack (pull), and then run it (run)
+- `make run-update` - to first update the source checkouts (pull-repos) and the stack images (build), and then run it (run)
 
 SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`), or with [http://searxng:8080](http://searxng:8080) in `home-lab-net`
 
