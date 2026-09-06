@@ -41,7 +41,7 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `FIRECRAWL_API_KEY`: must match `CRW_API_KEY` in [`agents-stack`](../agents-stack/) `.env` (all `/v1/*` + `/v2/*` require it)
 
 **Source build (fork):**
-- `OPENWEBUI_PATH`: path to the open-webui fork checkout on the deploy host (default: `../../open-webui`); `make pull-repos` runs `git pull` there
+- `OPENWEBUI_PATH`: path to the open-webui fork checkout on the deploy host (default: `../../repos/open-webui`, same pattern as `agents-stack`); `make pull-repos` runs `git pull` there
 - `OPENWEBUI_BASE_IMAGE`: local tag for the base image built from the fork (default: `luna-openwebui-base:local`); the overlay `Dockerfile` builds `FROM` it — set to `ghcr.io/open-webui/open-webui:main-slim` to skip the fork and overlay branding onto upstream instead
 
 **Model Configuration:**
