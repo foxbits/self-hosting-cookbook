@@ -40,6 +40,10 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `FIRECRAWL_API_BASE_URL`: crw base URL as seen from this container (default: `http://crw:3000/firecrawl` — OpenWebUI appends `/v2/search`, `/v2/scrape` itself, do not add `/v1`/`/v2` suffix)
 - `FIRECRAWL_API_KEY`: must match `CRW_API_KEY` in [`agents-stack`](../agents-stack/) `.env` (all `/v1/*` + `/v2/*` require it)
 
+**Source build (fork):**
+- `OPENWEBUI_PATH`: path to the open-webui fork checkout on the deploy host (default: `../../open-webui`); `make pull-repos` runs `git pull` there
+- `OPENWEBUI_BASE_IMAGE`: local tag for the base image built from the fork (default: `luna-openwebui-base:local`); the overlay `Dockerfile` builds `FROM` it — set to `ghcr.io/open-webui/open-webui:main-slim` to skip the fork and overlay branding onto upstream instead
+
 **Model Configuration:**
 - `DEFAULT_MODELS`: main chat model (default: `moonshotai/kimi-k2.6`) - make sure to use the exact naming from your provider
 - `TASK_MODEL_EXTERNAL`: fast model for non-chat tasks like title/follow-up generation (default: `unsloth/gemma-3-4b-it`)
@@ -95,11 +99,12 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 2. This stack depends on a SQL database (PostgreSQL) and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) - database name `openwebui` - and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
 3. Web search and fetch go through [`agents-stack`](../agents-stack/) `crw` (Firecrawl-compatible, host port `9710`, in-network `http://crw:3000`), which itself needs `searxng` + `camofox` healthy — start `agents-stack` first and copy `CRW_API_KEY` from its `.env` into `FIRECRAWL_API_KEY` here.
+4. This stack builds from source like the [`agents-stack`](../agents-stack/) services: clone the open-webui fork next to this repo (see `OPENWEBUI_PATH` in `.env.default`), copy `.env.default` to `.env` and set `OPENWEBUI_PATH` if your checkout lives elsewhere. Always use the `make` targets below — a bare `docker compose build` fails without the base image that `make build-base` produces.
 
-4. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
-5. The stack has pre-configured recommended security settings enabled by default (see the compose file)
-6. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
-7. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
+5. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
+6. The stack has pre-configured recommended security settings enabled by default (see the compose file)
+7. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
+8. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
 
 ### Starting the stack
 
@@ -108,9 +113,11 @@ You will have to have `docker` and `docker compose` installed on the host machin
 Make sure that you setup the environment variables correctly.
 
 Then use:
-- `make build` - to update the stack images to latest version
+- `make pull-repos` - to `git pull` the fork checkout at `OPENWEBUI_PATH` (same pattern as [`agents-stack`](../agents-stack/))
+- `make build-base` - to build the fork's `Dockerfile` (slim flavor, `USE_SLIM=true`) into the `OPENWEBUI_BASE_IMAGE` tag
+- `make build` - to build the base image and then the branding overlay (`Dockerfile` in this directory, `static/` assets)
 - `make run` - to just run the system (basic docker compose up command); additionaly it will also create the database `openwebui` on first run, if connected to postgres, since the application itself does not create it
-- `make run-update` - to first update the stack (pull), and then run it (run)
+- `make run-update` - to first update the fork (pull-repos), rebuild everything (build), and then run it (run)
 
 OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 

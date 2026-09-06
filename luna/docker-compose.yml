@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${OPENWEBUI_BASE_IMAGE:-luna-openwebui-base:local}
     container_name: luna-openwebui
     restart: unless-stopped
     ports:
