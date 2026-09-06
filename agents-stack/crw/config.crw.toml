@@ -12,6 +12,7 @@ http_timeout_ms = 10000
 [renderer.camoufox]
 base_url = "http://camofox:9377"
 include_in_auto = true
+wait_enabled = true
 camoufox_timeout_ms = 60000
 # api_key left unset — CRW_RENDERER__CAMOUFOX__API_KEY env wins (AppConfig precedence:
 # env > $CRW_CONFIG file > user config > config.default.toml).

@@ -259,13 +259,13 @@ Compose healthcheck is a bash `/dev/tcp` liveness probe on `3000` (the runtime i
 #### Camofox integration and limits
 
 - Ladder: `mode="auto"` + `include_in_auto=true` + non-empty `base_url` is the only way into the auto chain. A configured-but-default (`false`) tier stays reachable solely via explicit `renderer="camoufox"` pins. `mode="camoufox"` (pin everything) is intentionally not used — HTTP stays first.
-- Contract: crw calls `POST /tabs {userId, sessionKey, url}` → `POST /tabs/{id}/evaluate {userId, expression="document.documentElement.outerHTML"}` → `DELETE /sessions/{userId}`, plus a `GET /health` probe. The evaluate response shape is `{ok, result}` where `result` is the HTML string. Upstream `jo-inc/camofox-browser` exposes `POST /tabs/{tabId}/evaluate` (see its `docs/openapi.json`); if the fork predates it or the native locale/geo patch broke it, the tier cannot work — rebase/patch the fork (the [Verifying crw](#verifying-crw) guide surfaces this first).
+- Contract: crw calls `POST /tabs {userId, sessionKey, url}` → `POST /tabs/{id}/wait {userId, timeout}` (best-effort, fail-open) → `POST /tabs/{id}/evaluate {userId, expression="document.documentElement.outerHTML"}` → `DELETE /sessions/{userId}`, plus a `GET /health` probe. The wait step is enabled via `wait_enabled = true` in `crw/config.crw.toml` (upstream default is also `true`; set explicitly here so the deployment does not silently depend on the default). The evaluate response shape is `{ok, result}` where `result` is the HTML string. Upstream `jo-inc/camofox-browser` exposes `POST /tabs/{tabId}/evaluate` (see its `docs/openapi.json`); if the fork predates it or the native locale/geo patch broke it, the tier cannot work — rebase/patch the fork (the [Verifying crw](#verifying-crw) guide surfaces this first).
 - Response-size cap: `CAMOFOX_EVALUATE_MAX_BODY_SIZE` (default `1mb`) bounds the evaluate payload on the camofox side.
 - Known gaps (accepted — HTTP+camofox only, CDP removed):
   - No screenshots: `formats:["screenshot"]` hard-errors with only camoufox configured.
   - No cookie carryover: crw mints a fresh random session per request and deletes it on a fixed 5s budget even on error, so imported cookies (`POST /sessions/:userId/cookies`) never apply.
   - No proxy rotation on the JS path and no CDP `Fetch` resource blocking (camofox loads the page itself — slower/heavier); HTTP-tier stealth headers/UA rotation still apply. No new proxy needed (direct residential egress, same as camofox today).
-  - No readiness wait: crw does create→immediate evaluate. It never calls camofox `POST /tabs/:id/wait`, so thin SPAs may return empty/challenge HTML and fail. `wait_for_ms` and custom headers are ignored on this tier — tune `camoufox_timeout_ms` (60s default) + request `deadlineMs` instead of expecting networkidle.
+  - Readiness wait: `wait_enabled = true` in `crw/config.crw.toml` runs best-effort `POST /tabs/:id/wait` (domcontentloaded + networkidle + hydration poll + settle) before evaluate, so thin SPAs settle instead of returning empty/challenge HTML. Fail-open: wait errors or `ready:false` still proceed to evaluate. Custom headers are ignored on this tier — tune `camoufox_timeout_ms` (60s default) + request `deadlineMs` instead of expecting networkidle.
   - Sidecar saturation: each crw request costs 1 camofox session + 1 tab against `MAX_SESSIONS=15 / MAX_TABS_GLOBAL=18`. Concurrent crawls (crw `max_concurrency=10` + fan-out) can exhaust the sidecar → 429/503. Cap crw concurrency first, raise camofox caps second.
 - Auth mapping: crw sends one bearer (`CRW_RENDERER__CAMOUFOX__API_KEY`, derived from `CAMOFOX_ACCESS_KEY`) on every camofox call including `GET /health`. crw never calls cookie import or `/stop`, so `CAMOFOX_API_KEY` / `CAMOFOX_ADMIN_KEY` are otherwise irrelevant to it.
 
@@ -283,11 +283,12 @@ Run these on the deploy host (Docker available). Modelled on the camofox Postman
 
 (a) Camofox contract check (base URL `http://<host>:9709`):
 
-1. **Spec check** — `GET http://<host>:9709/openapi.json` and confirm it contains `/tabs/{tabId}/evaluate`. If absent: STOP — rebase/patch the fork (or change crw to snapshot, out of scope).
+1. **Spec check** — `GET http://<host>:9709/openapi.json` and confirm it contains `/tabs/{tabId}/evaluate` and `/tabs/{tabId}/wait`. If either is absent: STOP — rebase/patch the fork (or change crw to snapshot, out of scope).
 2. **Create a tab** — `POST /tabs` with `Authorization: Bearer $CAMOFOX_ACCESS_KEY`, body `{"userId": "crw-smoke", "sessionKey": "crw-smoke", "url": "https://example.com"}`. Note the tab id. If 401, retry with `Authorization: Bearer $CAMOFOX_API_KEY`; whichever succeeds is the key crw must use — rewire `CRW_RENDERER__CAMOUFOX__API_KEY` in compose to the winner and document it in `.env`.
-3. **Evaluate** — `POST /tabs/:id/evaluate` (same bearer as step 2), body `{"userId": "crw-smoke", "expression": "document.documentElement.outerHTML"}`. Expect `{ok: true, result: "<html>..."}`.
-4. **Cleanup** — `DELETE /sessions/crw-smoke` (same bearer). Expect 200.
-5. **Bearer health** — `GET /health` with the same bearer. Expect 200 (if a bearer-gated `/health` ever 401s here, crw's `is_available()` stays false and the tier is skipped).
+3. **Wait** — `POST /tabs/:id/wait` (same bearer as step 2), body `{"userId": "crw-smoke", "timeout": 15000}`. Expect `{ok: true, ready: true/false}` (fail-open — either value proceeds to evaluate).
+4. **Evaluate** — `POST /tabs/:id/evaluate` (same bearer as step 2), body `{"userId": "crw-smoke", "expression": "document.documentElement.outerHTML"}`. Expect `{ok: true, result: "<html>..."}`.
+5. **Cleanup** — `DELETE /sessions/crw-smoke` (same bearer). Expect 200.
+6. **Bearer health** — `GET /health` with the same bearer. Expect 200 (if a bearer-gated `/health` ever 401s here, crw's `is_available()` stays false and the tier is skipped).
 
 (b) crw smokes (base URL `http://<host>:9710`, bearer `CRW_API_KEY` unless noted):
 
