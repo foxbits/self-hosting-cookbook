@@ -34,8 +34,11 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL
 - `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
 
-**Web Search / Fetch (crw, Firecrawl-compatible):**
-- `WEB_SEARCH_ENGINE`: web search engine (default: `firecrawl` — crw search via SearXNG)
+**Web Search / Fetch (direct SearXNG search + crw fetch):**
+- `WEB_SEARCH_ENGINE`: web search engine (default: `searxng` — direct, same results as via crw without the extra hop)
+- `SEARXNG_QUERY_URL`: SearXNG query URL as seen from this container (default: `http://searxng:8080/search?q=<query>`)
+- `WEB_SEARCH_RESULT_COUNT`: search result count (default: `10`)
+- `WEB_SEARCH_CONCURRENT_REQUESTS`: parallel searches (default: `1`, avoids rate-limiting/captchas)
 - `WEB_LOADER_ENGINE`: web fetch/loader engine (default: `firecrawl` — crw scrape via HTTP + camofox)
 - `FIRECRAWL_API_BASE_URL`: crw base URL as seen from this container (default: `http://crw:3000/firecrawl` — OpenWebUI appends `/v2/search`, `/v2/scrape` itself, do not add `/v1`/`/v2` suffix)
 - `FIRECRAWL_API_KEY`: must match `CRW_API_KEY` in [`agents-stack`](../agents-stack/) `.env` (all `/v1/*` + `/v2/*` require it)
@@ -157,12 +160,12 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
       2. Edit the pipe code to put the models id to match the IDs from your provider, otherwise it will not work
       3. It does not require direct deepseek api access, you can use any provider, use the same url and api key you set in OUI config
 2. Go to Admin Panel - Settings -> WebSearch
-   1. Enable it with engine as "firecrawl"
-   2. For Firecrawl API Base URL set `http://crw:3000/firecrawl` (in-network name + container port; `localhost:9710` does not work from inside this container; do not append `/v1` or `/v2`)
-   3. For Firecrawl API Key set the `CRW_API_KEY` value from [`agents-stack`](../agents-stack/) `.env`
-   4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
-   5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
-   6. Set Web Loader Engine to "firecrawl" on the same page so URL fetches (`fetch_url`, RAG URL load) also go through crw (plain markdown only — `summary`/`json`-schema extraction returns `400` in this deployment because crw has no `[extraction.llm]` wired).
+   1. Enable it with engine as "searxng" (direct search; crw search returns the same snippets with an extra hop)
+   2. For Searxng Query URL set `http://searxng:8080/search?q=<query>` (in-network name + container port)
+   3. For Search Result Count the `.env` default `10` is seeded on first start; `5`-`10` suits everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
+   4. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
+   5. Set Parallel searches to `1` (seeded from `.env`) to avoid getting blocked and captcha'd by search engines.
+   6. Set Web Loader Engine to "firecrawl" on the same page so URL fetches (`fetch_url`, RAG URL load) go through crw: for Firecrawl API Base URL set `http://crw:3000/firecrawl` (do not append `/v1` or `/v2`), for Firecrawl API Key set the `CRW_API_KEY` value from [`agents-stack`](../agents-stack/) `.env` (plain markdown only — `summary`/`json`-schema extraction returns `400` in this deployment because crw has no `[extraction.llm]` wired).
 3. Go to Admin Panel - Users - Groups
    1. Enable "Open Sharing" if you want people to be able to share chats with a public link or "Public" if you want them to be able to share them with other users from the server only.
 4. Go to Admin Panel -> Settings -> Interface:
@@ -190,9 +193,9 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
       ```
    4. Choose a capable **Task Model** that follows instructions well and outputs clean JSON.
 
-#### Configure crw as search + web fetcher
+#### Configure crw as web fetcher
 1. [`agents-stack`](./../agents-stack/) `crw` exposes the Firecrawl v2 surface OpenWebUI `main` calls (`POST /v2/search`, `/v2/scrape`, plus `/v2/crawl|map|extract`) under the canonical `/firecrawl/*` prefix (root `/v2/*` is a deprecated alias of the same handlers). That is why `FIRECRAWL_API_BASE_URL=http://crw:3000/firecrawl` — OpenWebUI appends `/v2/...` itself.
-2. The `.env` defaults already select it (`WEB_SEARCH_ENGINE=firecrawl`, `WEB_LOADER_ENGINE=firecrawl`); the Admin Panel values above just mirror them into the DB. After changing `.env`, restart (`make run`) so the env seeds the config.
+2. The `.env` defaults already select direct search plus crw fetch (`WEB_SEARCH_ENGINE=searxng`, `WEB_LOADER_ENGINE=firecrawl`); the Admin Panel values above just mirror them into the DB. After changing `.env`, restart (`make run`) so the env seeds the config.
 
 ### Back-up
 
