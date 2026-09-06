@@ -2,7 +2,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 
 ## Applications list
 1. [`actual`](actual) - docker compose setup for an [Actual](https://actualbudget.org/docs/) server, for money management with envelope budgeting and calendar events.
-2. [`agents-stack`](agents-stack) - docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend
+2. [`agents-stack`](agents-stack) - docker compose setup for agents
 3. [`arr-stack`](arr-stack) - docker compose setup for the official images for the *arr stack: [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr), [jackett](https://github.com/Jackett/Jackett) and [flaresolverr](https://github.com/FlareSolverr/FlareSolverr)
 4. [`beszel`](./beszel/) - docker compose setup for a [Beszel](https://beszel.dev/) system monitoring server that can monitor both system usage, services and docker containers.
 5. [`datastore-sql`](datastore-sql) - docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically, with vector database support

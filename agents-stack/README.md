@@ -1,4 +1,4 @@
-This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [crawl4ai](https://docs.crawl4ai.com/) - website crawler for LLMs, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend, [camofox-browser](https://github.com/jo-inc/camofox-browser) - anti-detection browser for agents (Camoufox engine) with native locale/timezone/geolocation identifiers matching the home residential IP
+This is the docker compose setup for a web search stack, which includes [SearXNG](https://github.com/searxng/searxng) - the Internet metasearch engine, [GPT Researcher](https://github.com/assafelovic/gpt-researcher) - autonomous research agent backend, [camofox-browser](https://github.com/jo-inc/camofox-browser) - anti-detection browser for agents (Camoufox engine) with native locale/timezone/geolocation identifiers matching the home residential IP
 
 A full setup and integration guide can be found on [thefoxdiaries.substack.com](https://thefoxdiaries.substack.com).
 
@@ -10,8 +10,6 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
   - [Starting the stack](#starting-the-stack)
     - [API Endpoints for SearXNG](#api-endpoints-for-searxng)
     - [Categories available for SearXNG](#categories-available-for-searxng)
-  - [MCP Server for Crawl4AI](#mcp-server-for-crawl4ai)
-    - [API Endpoints for Crawl4AI](#api-endpoints-for-crawl4ai)
   - [Camofox Browser](#camofox-browser)
     - [Browser identity (locale/timezone/geolocation)](#browser-identity-localetimezonegeolocation)
     - [API Endpoints for Camofox](#api-endpoints-for-camofox)
@@ -35,7 +33,6 @@ A full setup and integration guide can be found on [thefoxdiaries.substack.com](
 
 The setup starts the following services:
 - [The SearXNG Server](https://fusionauth.io/docs/get-started/download-and-install/docker) at port `9704`
-- [crawl4ai](https://docs.crawl4ai.com/) at port `9705`
 - [open-crawl](https://github.com/foxbits/open-crawl) at port `9708`
 - [GPT Researcher](https://github.com/assafelovic/gpt-researcher) backend at port `9706`
 - [camofox-browser](https://github.com/jo-inc/camofox-browser) at port `9709` (stealth browser; see [Camofox Browser](#camofox-browser))
@@ -60,8 +57,6 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 - `SEARXNG_SECRET`: A secret key for the cryptography of this instance - change it with a random value, e.g. generate it with  openssl rand -hex 32
 - `WOLFRAM_DISABLED`: set to `false` only if you provide a `WOLFRAM_API_KEY` below
 - `WOLFRAM_API_KEY`: Go to https://developer.wolframalpha.com/access and create an account and an API key (Full Results API) if you want to use Wolfram Alpha as source as well (the API is limited on the free tier). Otherwise, leave `WOLFRAM_DISABLED` as `true`.
-- `MAX_CONCURRENT_TASKS`: Depends on the allowed number of concurrent tasks for a crawl, number must be considered with the formula agent count x parallel tasks x 150MB depending on the RAM you allocate and the number of agents you plan to use. Default is 10.
-- `CRAWL4AI_API_TOKEN`: Random token to protect the crawl4ai instance; can use `openssl rand -hex 32` to generate
 - `CAMOFOX_BROWSER_PATH`: checkout of the camofox-browser fork (with the native locale/geo identifier patch); built with the official `Dockerfile.ci`, same as `GPT_RESEARCHER_PATH`/`OPENCRAWL_PATH`. Keep the fork rebased on upstream releases.
 - `CAMOUFOX_VERSION` / `CAMOUFOX_RELEASE`: Camoufox engine pinned to the latest `daijro/camoufox` release (tag `v<VERSION>-<RELEASE>`); refresh from the releases page. Note upstream pins older engines per app release, so smoke-test after bumping (browserscan check below).
 - `CAMOFOX_ACCESS_KEY` / `CAMOFOX_API_KEY` / `CAMOFOX_ADMIN_KEY`: bearer keys for the camofox API (global access / cookie import / `POST /stop`); generate with `openssl rand -hex 32`.
@@ -81,11 +76,11 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the following variables:
 
-- `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
+- `GPT_RESEARCHER_PATH`: path to where you have cloned the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher)
 - `LANGUAGE`: The language to generate the response in
 - `RETRIEVER`: search backend for GPT Researcher (`searx` = local SearXNG)
 - `SEARX_URL`: in-network URL of SearXNG used by the retriever
-- `OPENCRAWL_PATH`: checkout of the open-crawl Tavily-compatible proxy over crawl4ai (see pre-requisites below)
+- `OPENCRAWL_PATH`: checkout of the open-crawl Tavily-compatible proxy (see pre-requisites below)
 - `CURATE_SOURCES`: Whether to curate sources for research. This step adds an LLM run which may increase costs and total run time but improves quality of source selection
 - `OPENAI_API_KEY`: API key for the LLM provider (required)
 - `OPENAI_BASE_URL`: Base URL for the Open-AI compatible LLM API
@@ -101,8 +96,9 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the fol
 - `DEEP_RESEARCH_DEPTH`: For each of the research area, how many sequential iterations are done
 - `DEEP_RESEARCH_CONCURRENCY`: How many concurrent deep research operations are allowed
 - `MIN_RAW_CONTENT_LENGTH`: Minimum length of content returned by search engine considered enough (if below this, will scrape the website using the configured scraping engine). Defaults to 300.
-- `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl`, `tavily_extract`, **`crawl4ai`** (local Crawl4AI, **default in this stack**)
-- `CRAWL4AI_API_URL`: URL of the Crawl4AI service (default: `http://crawl4ai:11235`, for host access use `http://localhost:9705`)
+- `SCRAPER`: Web scraper method - `bs` (BeautifulSoup), `browser` (Selenium), `nodriver` (ZenDriver), `firecrawl` (**local crw Firecrawl-compatible, default in this stack**), `tavily_extract`
+- `FIRECRAWL_SERVER_URL`: URL of the crw Firecrawl-compatible service (default: `http://crw:3000/firecrawl`)
+- `FIRECRAWL_API_KEY`: must match `CRW_API_KEY` (all `/v1/*` + `/v2/*` require it)
 - `IMAGE_GENERATION_ENABLED`: Enable AI-generated inline images (`true`/`false`, default: `false`).
 - `IMAGE_GENERATION_PROVIDER`: Image generation provider - `google` (official Google API) or `openai` (OpenAI-compatible custom URL)
 - `IMAGE_GENERATION_API_KEY`: API key for OpenAI-compatible image generation (uses `OPENAI_API_KEY` as fallback)
@@ -118,8 +114,8 @@ GPT Researcher requires an OpenAI-compatible LLM API Provider. Configure the fol
 1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 2. This stack depends on an In-Memory Database (Valkey) and by default is configured to use a [`datastore-memory`](../datastore-memory/) instance already running on the same docker network (`home-lab-net`), so that needs to be configured first.
 3. On the first run, the stack will generate a `settings.yml` file in `searxng/core-config` directory, based on the default configuration and environment variables. On subsequent runs, if you want to change the config file (you should not need to), you need to delete the existing `settings.yml` file and allow the `run` command to run as `sudo` since it needs to take ownership of the directory containing it.
-4. For GPT Researcher, this stack (temporarily) uses a fork of it, to be able to use crawl4ai as engine (and some embeddings fixes), therefore you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds crawl4ai and open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and set the path to it through `GPT_RESEARCHER_PATH`.
-5. For Crawl4AI, this stack also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy on top of crawl4ai that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
+4. For GPT Researcher, this stack (temporarily) uses a fork of it, to be able to use open-ai compatible image generators (and some embeddings fixes), therefore you will have to first clone locally the repository [better-gpt-researcher](https://github.com/foxbits/better-gpt-researcher) (which adds open-ai compatible image generators) or the original [gpt-researcher](https://github.com/assafelovic/gpt-researcher) and set the path to it through `GPT_RESEARCHER_PATH`.
+5. This stack also adds [open-crawl](https://github.com/foxbits/open-crawl), a proxy that exposes Tavily compatible APIs (that can be used with [OpenWebUI](./../luna/) or other tools). So first you have to clone the repository and set the path to it through `OPENCRAWL_PATH`
 6. For Camofox, clone the camofox-browser fork (with the native locale/geo identifier patch) and set the path to it through `CAMOFOX_BROWSER_PATH`.
 7. For crw, clone the crw repository and set the path to it through `CRW_PATH`.
 
@@ -137,8 +133,6 @@ Then use:
 - `make run-update` - to first update the source checkouts (pull-repos) and the stack images (build), and then run it (run)
 
 SearXNG will be available at [http://localhost:9704](http://localhost:9704) (or your specific `SEARXNG_BASE_URL`), or with [http://searxng:8080](http://searxng:8080) in `home-lab-net`
-
-Crawl4AI will be available at [http://localhost:9705](http://localhost:9705), or with [http://crawl4ai:11235](http://crawl4ai:11235) in `home-lab-net`
 
 GPT Researcher will be available at [http://localhost:9706](http://localhost:9706), or with [http://gpt-researcher:8000](http://gpt-researcher:8000) in `home-lab-net`
 
@@ -167,40 +161,6 @@ crw will be available at [http://localhost:9710](http://localhost:9710), or with
 - `social` — social media (Reddit, Mastodon, Lemmy, Tootfinder)
 - `financial` - Reuters, Brave News (Finance), Duck Duck Go Finance News, Currency Converter, Wolfram Alpha (Optional)
 - `code` & `it` — source code (GitHub, StackOverflow), forums (StackExchange, SuperUser)
-
-### MCP Server for Crawl4AI
-
-The Crawl4AI server exposes two MCP endpoints:
-- Server-Sent Events (SSE): http://localhost:11235/mcp/sse
-- WebSocket: ws://localhost:11235/mcp/ws
-
-Example to add the SSE endpoint as MCP server:
-`mcp add --transport sse c4ai-sse http://localhost:9705/mcp/sse`
-
-#### API Endpoints for Crawl4AI
-
-For full details see [their official documentation](https://docs.crawl4ai.com/core/self-hosting/#mcp-model-context-protocol-support).
-
-| Endpoint | Description | Format |
-|----------|-----------|--------|
-| `GET /playground` | Playground website to test, use in browser | Application |
-| `POST /crawl { urls: [] }` | The default crawl endpoint, crawls media, html and markdown | Markdown |
-| `POST /md { url: [] }` | The default crawl endpoint, crawls media, html and markdown | Markdown |
-| `POST /html` { url: "" } | Crawls the content as HTML | HTML |
-| `POST /screenshot` { url: "" } | Crawls the content as HTML | HTML |
-| `POST /pdf` { url: "" } | Crawls the content as PDF | PDF |
-| `POST /execute_js` { url: "", scripts: [""] } | Execute JS on the page | Markdown |
-
-For dynamic websites, add in the request body:
-```
-"crawler_config": {
-    "wait_until": "networkidle"
-  }
-```
-
-For the `/md` request, use `"f": "raw"` in the body to get the unfit markdown (sometimes the fitting process strips wrong parts of websites, even important ones).
-For the `/crawl` request, you can let the agent use the `raw_markdown` content, which is the unfit one and contains also links to media (separately, media is also in the `media` object).
-
 
 ### Camofox Browser
 
@@ -395,9 +355,8 @@ The scraper is configurable via the `SCRAPER` environment variable:
 - `bs` - BeautifulSoup (static) - no additional setup
 - `browser` - Selenium (dynamic) - requires WebDriver setup
 - `nodriver` - NoDriver/ZenDriver (dynamic) - requires `pip install zendriver`
-- `firecrawl` - FireCrawl - requires API key and `pip install firecrawl-py`
+- `firecrawl` - **Local crw Firecrawl-compatible** (default in this stack) - uses the crw service (`FIRECRAWL_SERVER_URL=http://crw:3000/firecrawl` with `FIRECRAWL_API_KEY` matching `CRW_API_KEY`)
 - `tavily_extract` - Tavily Extract - requires API key and `pip install tavily-python`
-- `crawl4ai` - **Local Crawl4AI** (default in this stack, no API key needed) - uses the Crawl4AI service running on port `9705`
 
 
 ### Back-up
