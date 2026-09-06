@@ -4,11 +4,12 @@ ENV_FILE := .env
 
 build-base:
 	@set -e; \
-	set -a; \
-	if [ -f $(ENV_FILE) ]; then . ./$(ENV_FILE); else . ./.env.default; fi; \
-	set +a; \
+	OPENWEBUI_PATH=$$(grep -h -E '^OPENWEBUI_PATH=' $(ENV_FILE) .env.default 2>/dev/null | head -n 1 | cut -d'=' -f2-); \
+	OPENWEBUI_BASE_IMAGE=$$(grep -h -E '^OPENWEBUI_BASE_IMAGE=' $(ENV_FILE) .env.default 2>/dev/null | head -n 1 | cut -d'=' -f2-); \
+	if [ -z "$$OPENWEBUI_PATH" ]; then echo "Error: OPENWEBUI_PATH not set in $(ENV_FILE) or .env.default"; exit 1; fi; \
+	: "$${OPENWEBUI_BASE_IMAGE:=luna-openwebui-base:local}"; \
 	HASH=$$(git -C "$$OPENWEBUI_PATH" rev-parse --short HEAD 2>/dev/null || echo dev-build); \
-	docker build -f "$$OPENWEBUI_PATH/Dockerfile" -t "$${OPENWEBUI_BASE_IMAGE:-luna-openwebui-base:local}" --build-arg USE_SLIM=true --build-arg BUILD_HASH="$$HASH" "$$OPENWEBUI_PATH"
+	docker build -f "$$OPENWEBUI_PATH/Dockerfile" -t "$$OPENWEBUI_BASE_IMAGE" --build-arg USE_SLIM=true --build-arg BUILD_HASH="$$HASH" "$$OPENWEBUI_PATH"
 
 build:
 	$(MAKE) build-base
@@ -18,9 +19,8 @@ build:
 pull-repos:
 	@set -e; \
 	ORIG_DIR=$$(pwd); \
-	set -a; \
-	if [ -f $(ENV_FILE) ]; then . ./$(ENV_FILE); else . ./.env.default; fi; \
-	set +a; \
+	OPENWEBUI_PATH=$$(grep -h -E '^OPENWEBUI_PATH=' $(ENV_FILE) .env.default 2>/dev/null | head -n 1 | cut -d'=' -f2-); \
+	if [ -z "$$OPENWEBUI_PATH" ]; then echo "Error: OPENWEBUI_PATH not set in $(ENV_FILE) or .env.default"; exit 1; fi; \
 	echo "Updating $$OPENWEBUI_PATH..."; \
 	cd "$$OPENWEBUI_PATH" && git pull && cd "$$ORIG_DIR";
 
