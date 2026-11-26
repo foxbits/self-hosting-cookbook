@@ -40,12 +40,15 @@ RUN apk add --no-cache \
     && apk del .apprise-build-deps
 
 COPY --from=rclone /usr/local/bin/rclone /usr/local/bin/rclone
-COPY scripts/backup.py /usr/local/bin/backup.py
+COPY src/backup_runner /app/backup_runner
 COPY services.json /etc/backup/services.json
 
+WORKDIR /app
+
 ENV PATH="/usr/local/bin:${PATH}" \
+    PYTHONPATH="/app" \
     PYTHONUNBUFFERED="1" \
     RCLONE_CONFIG="/config/rclone/rclone.conf" \
     RESTIC_CACHE_DIR="/root/.cache/restic"
 
-ENTRYPOINT ["/sbin/tini", "--", "python3", "/usr/local/bin/backup.py", "entrypoint"]
+ENTRYPOINT ["/sbin/tini", "--", "python3", "-m", "backup_runner", "entrypoint"]

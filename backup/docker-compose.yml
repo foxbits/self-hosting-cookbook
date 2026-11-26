@@ -44,7 +44,7 @@ services:
       - ./restore:/restore
       - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
-      test: ["CMD", "python3", "/usr/local/bin/backup.py", "healthcheck"]
+      test: ["CMD", "python3", "-m", "backup_runner", "healthcheck"]
       interval: 30s
       timeout: 10s
       retries: 3

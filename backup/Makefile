@@ -2,11 +2,11 @@ SHELL := /bin/sh
 
 SNAPSHOT ?= latest
 PYTHON := python3
-CLI := /usr/local/bin/backup.py
+CLI := -m backup_runner
 EXEC_CLI := docker compose exec backup $(PYTHON) $(CLI)
 RUN_CLI := docker compose run --rm --entrypoint $(PYTHON) backup $(CLI)
 
-.PHONY: build pull run run-update update-run init rclone-config rclone-reconnect rclone-check preflight backup backup-service snapshots check restore notify-test unlock enable-schedule disable-schedule
+.PHONY: build pull run run-update update-run test init rclone-config rclone-reconnect rclone-check preflight backup backup-service snapshots check restore notify-test unlock enable-schedule disable-schedule
 
 build:
 	docker compose build --pull
@@ -23,6 +23,9 @@ run-update:
 
 # Alias for run-update
 update-run: run-update
+
+test:
+	$(PYTHON) -m unittest discover -s tests -t . -v
 
 init:
 	$(RUN_CLI) init

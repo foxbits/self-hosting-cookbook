@@ -24,7 +24,7 @@ The stack starts **one container**, `backup`, with **no published host port**. I
 
 The container contains:
 
-- a Python runner (`backup.py`) for orchestration, validation, locking, stop/start and notifications;
+- a Python package (`src/backup_runner/`) for orchestration, validation, locking, stop/start and notifications;
 - the JSON service catalog (`services.json`), mounted read-only at `/etc/backup/services.json`;
 - `restic` for encrypted, deduplicated snapshots and retention;
 - `rclone` for the iCloud Drive remote;
@@ -258,9 +258,9 @@ make restore SERVICE=vaultwarden SNAPSHOT=latest
 Inside the container, the same commands are available:
 
 ```sh
-docker compose exec backup python3 /usr/local/bin/backup.py run-all
-docker compose exec backup python3 /usr/local/bin/backup.py run immich
-docker compose exec backup python3 /usr/local/bin/backup.py snapshots
+docker compose exec backup python3 -m backup_runner run-all
+docker compose exec backup python3 -m backup_runner run immich
+docker compose exec backup python3 -m backup_runner snapshots
 ```
 
 ## Restore
@@ -346,7 +346,14 @@ The `configs` service backs up every service `.env` (and the repo-root `.env`) i
 
 ## Validation notes
 
-This repository is code-only and has no container runtime. Static checks (file layout, YAML, Python syntax, env-key documentation, root metadata) run here. The real validation must happen on the deployment host:
+This repository is code-only and has no container runtime. Static checks (file layout, YAML, Python syntax, unit tests, env-key documentation, root metadata) run here. Run the Python package tests from this directory with:
+
+```sh
+make test
+# or: python3 -m unittest discover -s tests -t . -v
+```
+
+The real validation must happen on the deployment host:
 
 1. `make run`, `make rclone-config`, `make rclone-check`, `make init`, `make notify-test`.
 2. `make preflight` with only `actual` enabled.
