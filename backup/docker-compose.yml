@@ -1,0 +1,64 @@
+services:
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backup
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=${BACKUP_TIMEZONE:-Europe/Bucharest}
+    networks:
+      - home-lab-net
+    volumes:
+      - ../:/cookbook:ro
+      - ./services.json:/etc/backup/services.json:ro
+      - type: bind
+        source: ${BACKUP_IMMICH_UPLOADS}
+        target: /sources/immich
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BACKUP_OPENCLOUD_CONFIG}
+        target: /sources/opencloud-config
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BACKUP_OPENCLOUD_DATA}
+        target: /sources/opencloud-data
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${BACKUP_DOCKER_VOLUMES_PATH:-/var/lib/docker/volumes}
+        target: /docker-volumes
+        read_only: true
+        bind:
+          create_host_path: false
+      - ./rclone:/config/rclone
+      - backup-cache:/root/.cache/restic
+      - backup-state:/var/lib/backup/state
+      - ./restore:/restore
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "python3", "/usr/local/bin/backup.py", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  backup-cache:
+  backup-state:
+
+networks:
+  home-lab-net:
+    external: true

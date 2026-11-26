@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "services": [
+    {
+      "name": "configs",
+      "description": "Every service .env file and the repo-root .env",
+      "type": "env_configs",
+      "root": "/cookbook",
+      "env_excludes": [
+        "/cookbook/backup/.env"
+      ]
+    },
+    {
+      "name": "actual",
+      "description": "Actual Budget server data",
+      "type": "files",
+      "sources": [
+        "/cookbook/actual/data"
+      ],
+      "optional_sources": [
+        "/cookbook/actual/.env"
+      ],
+      "stop": {
+        "project": "actual",
+        "services": [
+          "actual_server"
+        ]
+      }
+    },
+    {
+      "name": "arr-stack",
+      "description": "Radarr, Sonarr and Jackett configuration",
+      "type": "files",
+      "sources": [
+        "/cookbook/arr-stack/config"
+      ],
+      "optional_sources": [
+        "/cookbook/arr-stack/.env"
+      ],
+      "excludes": [
+        "/cookbook/arr-stack/config/jackett-downloads"
+      ],
+      "stop": {
+        "project": "arr-stack",
+        "services": [
+          "radarr",
+          "sonarr",
+          "jackett"
+        ]
+      }
+    },
+    {
+      "name": "datastore-sql",
+      "description": "PostgreSQL globals and all databases",
+      "type": "postgres_cluster"
+    },
+    {
+      "name": "fusionauth",
+      "description": "FusionAuth database, config volume, kickstart and plugins",
+      "type": "files",
+      "sources": [
+        "/docker-volumes/${BACKUP_FUSIONAUTH_VOLUME:-fusionauth_fusionauth_config}/_data"
+      ],
+      "optional_sources": [
+        "/cookbook/fusionauth/kickstart",
+        "/cookbook/fusionauth/plugins",
+        "/cookbook/fusionauth/.env"
+      ],
+      "databases": [
+        "fusionauth"
+      ]
+    },
+    {
+      "name": "immich",
+      "description": "Immich database and uploaded photos/videos",
+      "type": "files",
+      "sources": [
+        "/sources/immich"
+      ],
+      "optional_sources": [
+        "/cookbook/immich/.env"
+      ],
+      "databases": [
+        "immich"
+      ]
+    },
+    {
+      "name": "luna",
+      "description": "OpenWebUI database and data volume",
+      "type": "files",
+      "sources": [
+        "/docker-volumes/${BACKUP_LUNA_VOLUME:-luna_openwebui-data}/_data"
+      ],
+      "optional_sources": [
+        "/cookbook/luna/.env"
+      ],
+      "databases": [
+        "openwebui"
+      ]
+    },
+    {
+      "name": "opencloud",
+      "description": "OpenCloud config and file data (PosixFS, xattrs)",
+      "type": "files",
+      "sources": [
+        "/sources/opencloud-config",
+        "/sources/opencloud-data",
+        "/cookbook/opencloud/config"
+      ],
+      "optional_sources": [
+        "/cookbook/opencloud/.env"
+      ]
+    },
+    {
+      "name": "portainer",
+      "description": "Portainer data volume",
+      "type": "files",
+      "sources": [
+        "/docker-volumes/${BACKUP_PORTAINER_VOLUME:-portainer_data}/_data"
+      ],
+      "stop": {
+        "project": "portainer",
+        "services": [
+          "portainer"
+        ]
+      }
+    },
+    {
+      "name": "vaultwarden",
+      "description": "Vaultwarden database and attachments/keys",
+      "type": "files",
+      "sources": [
+        "/cookbook/vaultwarden/vw-data"
+      ],
+      "optional_sources": [
+        "/cookbook/vaultwarden/.env"
+      ],
+      "databases": [
+        "vaultwarden"
+      ]
+    },
+    {
+      "name": "agents-stack",
+      "description": "SearXNG config, camofox session state and GPT Researcher outputs",
+      "type": "files",
+      "sources": [
+        "/cookbook/agents-stack/searxng/core-config",
+        "/docker-volumes/${BACKUP_CAMOFOX_PROFILES_VOLUME:-agents-stack_camofox-profiles}/_data",
+        "/cookbook/agents-stack/camofox/cookies",
+        "/cookbook/agents-stack/camofox/uploads",
+        "/docker-volumes/${BACKUP_GPT_RESEARCHER_VOLUME:-agents-stack_gpt-researcher-data}/_data"
+      ],
+      "optional_sources": [
+        "/cookbook/agents-stack/.env"
+      ],
+      "stop": {
+        "project": "agents-stack",
+        "services": [
+          "camofox"
+        ]
+      }
+    }
+  ]
+}

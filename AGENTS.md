@@ -74,7 +74,7 @@ README.md              # repo-root: numbered applications list
 ```
 
 Naming: the directory name, `container_name`, and the `EXECUTION_ORDER` entry are the same
-string (e.g. `apprise-notify`). Use kebab-case.
+string (e.g. `vaultwarden`). Use kebab-case.
 
 ## The docker network
 
@@ -91,7 +91,7 @@ All inter-container communication happens over an **external** docker network na
       external: true
   ```
 - Reach peers by `container_name` as the hostname, e.g. `redis://datastore-memory:6379/0`,
-  `http://apprise-notify:8000`, `jdbc:postgresql://datastore-sql:5432/...`.
+  `http://vaultwarden:80`, `jdbc:postgresql://datastore-sql:5432/...`.
 - New services SHOULD join `home-lab-net`. (A few older ones only publish host ports and skip
   the network — do not copy that; join the network.)
 
@@ -106,10 +106,11 @@ Current host ports in use:
 2283 immich | 5432 postgres (datastore-sql) | 6379 valkey (datastore-memory)
 7878 radarr | 8090 beszel | 8191 flaresolverr | 8989 sonarr | 9117 jackett (arr-stack)
 9701 fusionauth | 9704 searxng | 9706 gpt-researcher | 9707 luna | 9708 open-crawl | 9709 camofox | 9710 crw (agents-stack)
-9830 jenkins | 9843 portainer | 9860 actual | 9862 apprise-notify | 9863 opencloud | 9864 vaultwarden
+9830 jenkins | 9843 portainer | 9860 actual | 9863 opencloud | 9864 vaultwarden
 ```
 (plex-server uses `network_mode: host` and the host's own 32400 — a special case; avoid unless
-the upstream image requires host networking.)
+the upstream image requires host networking. `backup` publishes no host port; it uses
+`home-lab-net` and outbound HTTPS for iCloud and Discord.)
 
 Convention:
 - Infra/data services may reuse the canonical port (5432, 6379, etc.).
@@ -176,7 +177,7 @@ environment-variables section.
 
 ### 3. `Makefile`
 
-**Image-only service** (most common — actual, datastore-*, apprise-notify):
+**Image-only service** (most common — actual, datastore-*, beszel):
 ```makefile
 .PHONY: pull run run-update update-run
 
@@ -223,12 +224,12 @@ At minimum:
 .env
 <runtime-data-dir>/
 ```
-(e.g. `data/`, `apprise_config/`, `apprise_attach/`). Ignore any bind-mounted runtime dir so it
+(e.g. `data/`, `beszel_data/`, `vw-data/`). Ignore any bind-mounted runtime dir so it
 isn't committed.
 
 ### 5. `README.md`
 
-Follow this structure (mirror `actual/README.md` / `apprise-notify/README.md`):
+Follow this structure (mirror `actual/README.md` / `vaultwarden/README.md`):
 - One-line intro: what it is + a link to the upstream project.
 - Line: "A full setup and integration guide can be found on thefoxdiaries.substack.com."
 - TOC (markdown links).
@@ -240,11 +241,11 @@ Follow this structure (mirror `actual/README.md` / `apprise-notify/README.md`):
   **Configure the stack** post-start steps (create admin account, point a reverse proxy, etc.).
 - **Back-up**: which bind-mounted dir(s) / named volume(s) hold the data to back up.
 - **Security** section (when relevant): call out any no-auth, public-exposure, or secret-handling
-  concerns explicitly and loudly (see `apprise-notify/README.md` for the pattern).
+  concerns explicitly and loudly (see `vaultwarden/README.md` for the pattern).
 
 ## Three deployment patterns
 
-1. **Official image** — `image: <image>:latest`. No Dockerfile. (actual, apprise-notify, beszel,
+1. **Official image** — `image: <image>:latest`. No Dockerfile. (actual, beszel,
    datastore-*, fusionauth, portainer.)
 2. **Overlay** (customize an official image) — a local `Dockerfile` starting `FROM <official>`
    that COPYs/patches assets; `build: context: .`. (luna overlays branding onto open-webui.)
@@ -316,9 +317,9 @@ The root `Makefile`'s `run-update-all` iterates `EXECUTION_ORDER`, runs each ser
 
 ## Code readability
 
-- The stack files are YAML, `Makefile`, shell recipes, `.env` and Markdown; keep the same names and
-  values consistent across `docker-compose.yml`, the service `Makefile`, `README.md` and the root
-  metadata.
+- The stack files are YAML, `Makefile`, scripts (shell or Python), JSON catalog files,
+  `.env` and Markdown; keep the same names and values consistent across `docker-compose.yml`,
+  the service `Makefile`, `README.md` and the root metadata.
 - Give non-obvious values a name at their owning scope: env vars in `.env.default`, Make variables
   for repeated paths or ports, instead of inline magic values repeated across files.
 - Preserve existing env var names, host/container ports and volume paths when refactoring; they are
