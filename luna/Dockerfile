@@ -1,4 +1,7 @@
-FROM ghcr.io/open-webui/open-webui:main-slim
+# Base image built from the fork (see Makefile `build-base` + OPENWEBUI_PATH);
+# defaults to the local tag so a stale upstream image can never sneak in.
+ARG BASE_IMAGE=luna-openwebui-base:local
+FROM ${BASE_IMAGE}
 
 COPY static/apple-touch-icon.png /app/build/static/apple-touch-icon.png
 COPY static/custom.css /app/build/static/custom.css

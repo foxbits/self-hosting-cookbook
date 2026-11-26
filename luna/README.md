@@ -6,6 +6,9 @@ This is the docker compose setup for [OpenWebUI](https://docs.openwebui.com/), a
   - [Pre-requisites](#pre-requisites)
   - [Starting the stack](#starting-the-stack)
   - [Configure the stack](#configure-the-stack)
+    - [For your user](#for-your-user)
+    - [For the server](#for-the-server)
+    - [Configure crw as search + web fetcher](#configure-crw-as-search--web-fetcher)
   - [Back-up](#back-up)
 
 
@@ -30,6 +33,19 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 **LLM Providers:**
 - `OPENAI_API_BASE_URL`: OpenAI-compatible API base URL
 - `OPENAI_API_KEY`: your API key for the LLM provider (create one and set it depending on what provider you use)
+
+**Web Search / Fetch (direct SearXNG search + crw fetch):**
+- `WEB_SEARCH_ENGINE`: web search engine (default: `searxng` — direct, same results as via crw without the extra hop)
+- `SEARXNG_QUERY_URL`: SearXNG query URL as seen from this container (default: `http://searxng:8080/search?q=<query>`)
+- `WEB_SEARCH_RESULT_COUNT`: search result count (default: `10`)
+- `WEB_SEARCH_CONCURRENT_REQUESTS`: parallel searches (default: `1`, avoids rate-limiting/captchas)
+- `WEB_LOADER_ENGINE`: web fetch/loader engine (default: `firecrawl` — crw scrape via HTTP + camofox)
+- `FIRECRAWL_API_BASE_URL`: crw base URL as seen from this container (default: `http://crw:3000/firecrawl` — OpenWebUI appends `/v2/search`, `/v2/scrape` itself, do not add `/v1`/`/v2` suffix)
+- `FIRECRAWL_API_KEY`: must match `CRW_API_KEY` in [`agents-stack`](../agents-stack/) `.env` (all `/v1/*` + `/v2/*` require it)
+
+**Source build (fork):**
+- `OPENWEBUI_PATH`: path to the open-webui fork checkout on the deploy host (default: `../../repos/open-webui`, same pattern as `agents-stack`); `make pull-repos` runs `git pull` there
+- `OPENWEBUI_BASE_IMAGE`: local tag for the base image built from the fork (default: `luna-openwebui-base:local`); the overlay `Dockerfile` builds `FROM` it — set to `ghcr.io/open-webui/open-webui:main-slim` to skip the fork and overlay branding onto upstream instead
 
 **Model Configuration:**
 - `DEFAULT_MODELS`: main chat model (default: `moonshotai/kimi-k2.6`) - make sure to use the exact naming from your provider
@@ -85,10 +101,13 @@ The setup uses the [`.env`](.env) file to define settings used in the docker com
 
 1. The stack runs on the docker network `home-lab-net`. To create it you can use the command `make create-network` from the root of this repository [`self-hosting-cookbook`](../).
 2. This stack depends on a SQL database (PostgreSQL) and Redis/Valkey. By default it is configured to use [`datastore-sql`](../datastore-sql/) - database name `openwebui` - and [`datastore-memory`](../datastore-memory/) instances already running on the same docker network (`home-lab-net`).
-3. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
-4. The stack has pre-configured recommended security settings enabled by default (see the compose file)
-5. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
-6. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
+3. Web search and fetch go through [`agents-stack`](../agents-stack/) `crw` (Firecrawl-compatible, host port `9710`, in-network `http://crw:3000`), which itself needs `searxng` + `camofox` healthy — start `agents-stack` first and copy `CRW_API_KEY` from its `.env` into `FIRECRAWL_API_KEY` here.
+4. This stack builds from source like the [`agents-stack`](../agents-stack/) services: clone the open-webui fork next to this repo (see `OPENWEBUI_PATH` in `.env.default`), copy `.env.default` to `.env` and set `OPENWEBUI_PATH` if your checkout lives elsewhere. Always use the `make` targets below — a bare `docker compose build` fails without the base image that `make build-base` produces.
+
+5. The stack also needs to be exposed through HTTPS to your connecting devices / services and that part is not included here. You can either add a [`caddy`](https://github.com/caddyserver/caddy) reverse proxy (with self-signed certificate) (example [`here`](../firefly/Caddyfile)) and then import the `.crt` certificate to your devices, or use a tunneling service like [cloudflared](https://github.com/cloudflare/cloudflared). If you do not use HTTPS, you won't be able to use the application on mobile phones as PWA.
+6. The stack has pre-configured recommended security settings enabled by default (see the compose file)
+7. If you do not have an OAUTH Server (e.g. [`fusionauth`](../fusionauth/)), you need to enable the user/password authentication by enabling the environment variables from the section "Default user authentication with username/password" and setting the OAUTH values to empty below. Otherwise, if you have an OAUTH server you want to use, leave them be and set all the values for the OAUTH.
+8. The stack allows you (even if OpenWebUI does not theoretically) to customize the logos and visuals of your OpenWebUI instance. You can find all the files that you can replace inside the [`static-example`](./static-example/) directory, including a [`custom.css`](./static/custom.css). You will have to copy this directory into a new `static` directory in the stack's root before the first run, and, if you want, replace the logos with your own. You have the option to also edit the `.manifest` file and put your naming in there. Have fun, explore!
 
 ### Starting the stack
 
@@ -97,9 +116,11 @@ You will have to have `docker` and `docker compose` installed on the host machin
 Make sure that you setup the environment variables correctly.
 
 Then use:
-- `make build` - to update the stack images to latest version
+- `make pull-repos` - to `git pull` the fork checkout at `OPENWEBUI_PATH` (same pattern as [`agents-stack`](../agents-stack/))
+- `make build-base` - to build the fork's `Dockerfile` (slim flavor, `USE_SLIM=true`) into the `OPENWEBUI_BASE_IMAGE` tag
+- `make build` - to build the base image and then the branding overlay (`Dockerfile` in this directory, `static/` assets)
 - `make run` - to just run the system (basic docker compose up command); additionaly it will also create the database `openwebui` on first run, if connected to postgres, since the application itself does not create it
-- `make run-update` - to first update the stack (pull), and then run it (run)
+- `make run-update` - to first update the fork (pull-repos), rebuild everything (build), and then run it (run)
 
 OpenWebUI will be available at [http://localhost:9707](http://localhost:9707).
 
@@ -139,12 +160,12 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
       2. Edit the pipe code to put the models id to match the IDs from your provider, otherwise it will not work
       3. It does not require direct deepseek api access, you can use any provider, use the same url and api key you set in OUI config
 2. Go to Admin Panel - Settings -> WebSearch
-   1. Enable it with engine as "searxng"
-   2. For Searxng Query URL set `http://searxng:8080/search?q=<query>`
-   3. For language set `all`
-   4. For Search Result Count set something between `5`-`10` for everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
-   5. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
-   6. Set Parallel searches to `1` (or small numbers) to avoid getting blocked and captcha'd by search engines.
+   1. Enable it with engine as "searxng" (direct search; crw search returns the same snippets with an extra hop)
+   2. For Searxng Query URL set `http://searxng:8080/search?q=<query>` (in-network name + container port)
+   3. For Search Result Count the `.env` default `10` is seeded on first start; `5`-`10` suits everyday use (normal responses using search, non-controversial subjects). This will not work for any research, only for answer engines.
+   4. Enable "Bypass Embedding and Retrieval" to speed-up searches by sending the full results to the LLM (this may speed-up responses but increase input token usage).
+   5. Set Parallel searches to `1` (seeded from `.env`) to avoid getting blocked and captcha'd by search engines.
+   6. Set Web Loader Engine to "firecrawl" on the same page so URL fetches (`fetch_url`, RAG URL load) go through crw: for Firecrawl API Base URL set `http://crw:3000/firecrawl` (do not append `/v1` or `/v2`), for Firecrawl API Key set the `CRW_API_KEY` value from [`agents-stack`](../agents-stack/) `.env` (plain markdown only — `summary`/`json`-schema extraction returns `400` in this deployment because crw has no `[extraction.llm]` wired).
 3. Go to Admin Panel - Users - Groups
    1. Enable "Open Sharing" if you want people to be able to share chats with a public link or "Public" if you want them to be able to share them with other users from the server only.
 4. Go to Admin Panel -> Settings -> Interface:
@@ -172,8 +193,9 @@ Go to your `WEBUI_URL`. With OAUTH on by default, you will just have to login wi
       ```
    4. Choose a capable **Task Model** that follows instructions well and outputs clean JSON.
 
-#### Configure Crawl4AI as web fetcher
-1. By default, the [`search-stach`](./../search-stack/) installs `open-crawl` as a tavily proxy for the `/extract` (and other) endpoints that redirect to the preinstalled crawl4ai instance. So go to Admin Panel - Settings - Web Search and set the Web Loader Engine to "tavily" - the system will work by default because open-crawl is injected directly in the docker engine as a tavily replacement
+#### Configure crw as web fetcher
+1. [`agents-stack`](./../agents-stack/) `crw` exposes the Firecrawl v2 surface OpenWebUI `main` calls (`POST /v2/search`, `/v2/scrape`, plus `/v2/crawl|map|extract`) under the canonical `/firecrawl/*` prefix (root `/v2/*` is a deprecated alias of the same handlers). That is why `FIRECRAWL_API_BASE_URL=http://crw:3000/firecrawl` — OpenWebUI appends `/v2/...` itself.
+2. The `.env` defaults already select direct search plus crw fetch (`WEB_SEARCH_ENGINE=searxng`, `WEB_LOADER_ENGINE=firecrawl`); the Admin Panel values above just mirror them into the DB. After changing `.env`, restart (`make run`) so the env seeds the config.
 
 ### Back-up
 

@@ -1,4 +1,0 @@
-searxng/*
-!searxng/core-config/
-searxng/core-config/*
-!searxng/core-config/.gitkeep
