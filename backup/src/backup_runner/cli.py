@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser = subparsers.add_parser("run", help="Back up one service")
     run_parser.add_argument("service")
 
-    subparsers.add_parser("preflight", help="Validate configuration, sources, repository and databases")
+    subparsers.add_parser("preflight", help="Validate configuration, sources and repository")
     subparsers.add_parser("snapshots", help="List restic snapshots")
     subparsers.add_parser("check", help="Apply retention, prune and verify repository data")
 

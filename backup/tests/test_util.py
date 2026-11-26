@@ -1,31 +1,11 @@
 from __future__ import annotations
 
-import os
 import subprocess
 import unittest
 from unittest.mock import patch
 
 from backup_runner import util
-from backup_runner.errors import CommandError, ConfigError
-
-
-class ExpandEnvTests(unittest.TestCase):
-    def test_substitutes_environment_value(self) -> None:
-        with patch.dict(os.environ, {"VOLUME": "fusionauth_config"}, clear=True):
-            self.assertEqual(util.expand_env("/docker-volumes/${VOLUME}/_data"), "/docker-volumes/fusionauth_config/_data")
-
-    def test_uses_default_when_missing(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            self.assertEqual(util.expand_env("${VOLUME:-fallback}"), "fallback")
-
-    def test_environment_wins_over_default(self) -> None:
-        with patch.dict(os.environ, {"VOLUME": "real"}, clear=True):
-            self.assertEqual(util.expand_env("${VOLUME:-fallback}"), "real")
-
-    def test_missing_without_default_raises(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            with self.assertRaises(ConfigError):
-                util.expand_env("${VOLUME}")
+from backup_runner.errors import CommandError
 
 
 class RunCheckedTests(unittest.TestCase):

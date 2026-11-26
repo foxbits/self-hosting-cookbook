@@ -1,15 +1,11 @@
-"""Small reusable helpers: subprocess execution, env expansion and formatting."""
+"""Small reusable helpers: subprocess execution and formatting."""
 
 from __future__ import annotations
 
-import os
-import re
 import subprocess
 from typing import Optional, Sequence
 
-from .errors import CommandError, ConfigError
-
-_ENV_PATTERN = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
+from .errors import CommandError
 
 
 def run_checked(
@@ -40,19 +36,6 @@ def run_checked(
             message = f"{message}: {detail}"
         raise CommandError(message)
     return result
-
-
-def expand_env(value: str) -> str:
-    def replace(match: re.Match[str]) -> str:
-        name = match.group(1)
-        default = match.group(2)
-        if name in os.environ:
-            return os.environ[name]
-        if default is not None:
-            return default
-        raise ConfigError(f"Environment variable {name} is not set (referenced in services.json)")
-
-    return _ENV_PATTERN.sub(replace, value)
 
 
 def human_bytes(value: int) -> str:

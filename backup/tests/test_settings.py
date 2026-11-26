@@ -93,12 +93,10 @@ class FilesystemTests(unittest.TestCase):
             root = Path(temp)
             with (
                 patch.object(settings, "STATE_DIR", root / "state"),
-                patch.object(settings, "STAGING_ROOT", root / "staging"),
                 patch.object(settings, "LOG_DIR", root / "logs"),
             ):
                 settings.ensure_dirs()
             self.assertTrue((root / "state").is_dir())
-            self.assertTrue((root / "staging").is_dir())
             self.assertTrue((root / "logs").is_dir())
 
     def test_ensure_commands_reports_missing(self) -> None:

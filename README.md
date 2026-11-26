@@ -4,7 +4,7 @@ This repository contains a set of tools and helpers for deploying self-hosted ap
 1. [`actual`](actual) - docker compose setup for an [Actual](https://actualbudget.org/docs/) server, for money management with envelope budgeting and calendar events.
 2. [`agents-stack`](agents-stack) - docker compose setup for agents
 3. [`arr-stack`](arr-stack) - docker compose setup for the official images for the *arr stack: [radarr](https://github.com/Radarr/Radarr), [sonarr](https://github.com/Sonarr/Sonarr), [jackett](https://github.com/Jackett/Jackett) and [flaresolverr](https://github.com/FlareSolverr/FlareSolverr)
-4. [`backup`](backup) - docker compose setup for encrypted, per-service [restic](https://restic.net/) backups to iCloud Drive via [rclone](https://rclone.org/), with [Apprise](https://appriseit.com/) Discord notifications.
+4. [`backup`](backup) - docker compose setup for encrypted [restic](https://restic.net/) backups of [Actual Budget](https://actualbudget.org/) to iCloud Drive via [rclone](https://rclone.org/), with [Apprise](https://appriseit.com/) Discord notifications.
 5. [`beszel`](./beszel/) - docker compose setup for a [Beszel](https://beszel.dev/) system monitoring server that can monitor both system usage, services and docker containers.
 6. [`datastore-sql`](datastore-sql) - docker compose setup for an SQL Database Server, [PostgreSQL](https://www.postgresql.org/docs/) specifically, with vector database support
 7. [`datastore-memory`](datastore-memory) - docker compose setup for an In-Memory Database, [Valkey](https://valkey.io/) specifically

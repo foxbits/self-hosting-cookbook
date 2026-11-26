@@ -121,31 +121,8 @@ def cmd_restore(name: str, requested: str) -> int:
             notify("failure", f"Restore FAILED: {name}", f"restic restore failed: {exc}")
             raise
 
-        LOG.info(
-            "Restored paths keep their absolute prefixes below %s: /cookbook, /docker-volumes, /sources and /var/lib/backup/staging.",
-            target,
-        )
-        if service.kind == "postgres_cluster":
-            staging = target / "var/lib/backup/staging/datastore-sql"
-            LOG.info("Full cluster dump: %s", staging / "all-databases.sql")
-            LOG.info("Globals dump: %s", staging / "globals.sql")
-            LOG.info(
-                "Full restore example: PGPASSWORD=<password> psql -h %s -U %s -f %s",
-                os.environ.get("BACKUP_PG_HOST", "datastore-sql"),
-                os.environ.get("BACKUP_PG_USER", "postgres"),
-                staging / "all-databases.sql",
-            )
-        for database in service.databases:
-            dump = target / "var/lib/backup/staging" / name / f"{database}.dump"
-            LOG.info("Database dump: %s", dump)
-            LOG.info(
-                "Restore example: PGPASSWORD=<password> pg_restore -h %s -U %s -d %s --clean --if-exists %s",
-                os.environ.get("BACKUP_PG_HOST", "datastore-sql"),
-                os.environ.get("BACKUP_PG_USER", "postgres"),
-                database,
-                dump,
-            )
-        LOG.info("Restore is non-destructive; the live services were not modified.")
+        LOG.info("Restored paths keep their absolute prefixes below %s: /cookbook.", target)
+        LOG.info("Restore is non-destructive; the live service was not modified.")
     return 0
 
 

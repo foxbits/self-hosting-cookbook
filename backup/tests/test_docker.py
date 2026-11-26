@@ -49,12 +49,11 @@ class StopStartTests(DockerStateTestBase):
         return Service(
             "actual",
             "Actual",
-            "files",
             stop=StopConfig(project="actual", services=("actual_server",)),
         )
 
     def test_stop_without_stop_config_is_noop(self) -> None:
-        service = Service("actual", "Actual", "files")
+        service = Service("actual", "Actual")
         with patch("backup_runner.docker_ctl.run_checked") as run:
             docker_ctl.stop_service(service)
         run.assert_not_called()

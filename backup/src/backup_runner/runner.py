@@ -4,22 +4,19 @@ from __future__ import annotations
 
 import logging
 import os
-import shutil
 import signal
 import time
 from typing import Any, Optional
 
 from .docker_ctl import check_docker, start_stopped, stop_service
-from .errors import BackupError, ConfigError
+from .errors import ConfigError
 from .notify import notify
-from .postgres import check_databases, check_pg_server, dump_cluster, dump_databases
 from .repository import preflight_repository
 from .restic import restic_backup, restic_forget
 from .services import Service, resolve_sources, selected_services
 from .settings import (
     LOG_DIR,
     MOUNT_PATHS,
-    STAGING_ROOT,
     backup_host,
     ensure_commands,
     ensure_dirs,
@@ -35,11 +32,8 @@ LOG = logging.getLogger("backup")
 
 def run_one_service(service: Service) -> bool:
     ensure_dirs()
-    staging = STAGING_ROOT / service.name
     log_file = LOG_DIR / f"{service.name}.log"
     json_file = LOG_DIR / f"{service.name}.json"
-    shutil.rmtree(staging, ignore_errors=True)
-    staging.mkdir(parents=True, exist_ok=True)
     log_file.write_text("", encoding="utf-8")
     json_file.write_text("", encoding="utf-8")
 
@@ -59,17 +53,6 @@ def run_one_service(service: Service) -> bool:
     try:
         sources = resolve_sources(service)
         stop_service(service)
-        if service.kind == "postgres_cluster":
-            check_pg_server()
-            dump_cluster(staging)
-            sources = [staging]
-        elif service.databases:
-            check_pg_server()
-            check_databases(service)
-            dump_databases(service, staging)
-            sources.append(staging)
-        if not sources:
-            raise BackupError("no sources were resolved")
         snapshot_id, total_bytes = restic_backup(service, sources, json_file, log_file)
         if not restic_forget(service):
             LOG.warning("Retention failed for %s; the new snapshot is still valid", service.name)
@@ -81,7 +64,6 @@ def run_one_service(service: Service) -> bool:
         except Exception as exc:  # noqa: BLE001 - never mask the original failure
             LOG.error("Could not restart containers after %s: %s", service.name, exc)
             restart_ok = False
-        shutil.rmtree(staging, ignore_errors=True)
         for sig, handler in previous_handlers.items():
             signal.signal(sig, handler)
 
@@ -158,14 +140,6 @@ def preflight_global() -> None:
 def preflight_all(config: dict[str, Service]) -> None:
     preflight_global()
     services = selected_services(config)
-    need_pg = False
     for service in services:
         resolve_sources(service)
-        if service.kind == "postgres_cluster" or service.databases:
-            need_pg = True
-    if need_pg:
-        check_pg_server()
-        for service in services:
-            if service.databases:
-                check_databases(service)
     LOG.info("Preflight OK for: %s", " ".join(service.name for service in services))

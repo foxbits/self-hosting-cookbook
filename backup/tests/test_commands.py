@@ -15,7 +15,7 @@ from backup_runner.services import Service
 
 class CommandTestBase(unittest.TestCase):
     def setUp(self) -> None:
-        self.service = Service("actual", "Actual", "files")
+        self.service = Service("actual", "Actual")
         self.config = {"actual": self.service}
         self.lock = patch("backup_runner.commands.backup_lock", return_value=nullcontext())
         self.lock.start()
@@ -156,9 +156,9 @@ class CheckCommandTests(CommandTestBase):
 
 
 class RestoreCommandTests(CommandTestBase):
-    def test_restore_runs_restic_and_logs_dump_paths(self) -> None:
-        service = Service("vaultwarden", "Vaultwarden", "files", databases=("vaultwarden",))
-        config = {"vaultwarden": service}
+    def test_restore_runs_restic(self) -> None:
+        service = Service("actual", "Actual")
+        config = {"actual": service}
         with tempfile.TemporaryDirectory() as temp:
             with (
                 patch("backup_runner.commands.load_services", return_value=config),
@@ -171,8 +171,8 @@ class RestoreCommandTests(CommandTestBase):
                 patch("backup_runner.commands.run_checked") as run,
                 patch("backup_runner.commands.notify") as notify,
             ):
-                self.assertEqual(commands.cmd_restore("vaultwarden", "latest"), 0)
-                self.assertTrue((Path(temp) / "vaultwarden").is_dir())
+                self.assertEqual(commands.cmd_restore("actual", "latest"), 0)
+                self.assertTrue((Path(temp) / "actual").is_dir())
         resolve.assert_called_once_with(service, "latest")
         self.assertEqual(run.call_args.args[0][:2], ["restic", "restore"])
         notify.assert_not_called()

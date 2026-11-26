@@ -32,8 +32,6 @@ def restic_backup(
         now_iso(),
         "--json",
     ]
-    for exclude in service.excludes:
-        args.extend(["--exclude", exclude])
     args.extend(str(path) for path in sources)
     try:
         with json_file.open("w", encoding="utf-8") as stdout, log_file.open("a", encoding="utf-8") as stderr:

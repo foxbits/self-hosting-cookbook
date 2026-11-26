@@ -11,7 +11,6 @@ RUN apk add --no-cache \
         ca-certificates \
         curl \
         docker-cli \
-        postgresql-client \
         python3 \
         py3-pip \
         restic \

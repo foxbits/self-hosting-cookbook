@@ -15,7 +15,6 @@ from .errors import ConfigError
 
 SERVICE_FILE: Final = Path("/etc/backup/services.json")
 STATE_DIR: Final = Path(os.environ.get("BACKUP_STATE_DIR", "/var/lib/backup/state"))
-STAGING_ROOT: Final = Path(os.environ.get("BACKUP_STAGING_ROOT", "/var/lib/backup/staging"))
 LOG_DIR: Final = Path(os.environ.get("BACKUP_LOG_DIR", "/var/lib/backup/logs"))
 LOCK_FILE: Final = Path(os.environ.get("BACKUP_LOCK_FILE", str(STATE_DIR / "backup.lock")))
 STOPPED_FILE: Final = Path(
@@ -26,7 +25,6 @@ CRONTAB_FILE: Final = Path(os.environ.get("BACKUP_CRONTAB_FILE", "/etc/backup-cr
 DOCKER_SOCKET: Final = Path("/var/run/docker.sock")
 MOUNT_PATHS: Final = (
     Path("/cookbook"),
-    Path("/docker-volumes"),
     Path("/config/rclone"),
     RESTORE_DIR,
 )
@@ -40,11 +38,6 @@ REQUIRED_IMAGE_COMMANDS: Final = (
     "restic",
     "rclone",
     "apprise",
-    "pg_dump",
-    "pg_dumpall",
-    "pg_restore",
-    "pg_isready",
-    "psql",
     "docker",
 )
 HEALTHCHECK_COMMANDS: Final = (*REQUIRED_IMAGE_COMMANDS, "supercronic")
@@ -63,7 +56,7 @@ def setup_logging() -> None:
 
 
 def ensure_dirs() -> None:
-    for path in (STATE_DIR, STAGING_ROOT, LOG_DIR):
+    for path in (STATE_DIR, LOG_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
 
