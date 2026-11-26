@@ -5,7 +5,36 @@ directory, deployed with `docker compose`. This file is the single source of tru
 new service stack is added, so you do **not** need to read every existing service to infer the
 conventions. Read this, then the upstream docs for the service you are deploying.
 
-When asked to "add a new service/stack", follow the checklist at the bottom of this file.
+When asked to "add a new service/stack", follow *Checklist for adding a new service stack*.
+
+## Repository instructions
+
+These instructions apply to the whole repository. Before changing a file in a nested scope, also
+read every `AGENTS.md` from the repository root to that file; the more specific instructions apply
+in addition to this file.
+
+## Shared agent instructions
+
+The stack-agnostic workflow and operating rules live in [`.agents/AGENTS.md`](.agents/AGENTS.md),
+with the detailed procedure in [`.agents/agent-workflow.md`](.agents/agent-workflow.md). See
+[`.agents/README.md`](.agents/README.md) to install them into a coding agent's global
+configuration. They apply here in addition to this file; the only repository-specific difference is
+that the workflow's Test step means the static checks described under *Development environment*.
+
+## Repository map
+
+- [`README.md`](README.md) — repo-root applications list and the documented default execution order.
+- [`Makefile`](Makefile) — repo-root targets: `create-network`, `run-update-all`, `clean-disk`.
+- [`.env.default`](.env.default) — repo-root `EXECUTION_ORDER`.
+- `<service-name>/` — one directory per stack, each holding the five required files described below.
+- [`AGENTS.md`](AGENTS.md) — this file: stack conventions, port allocation, validation checklist.
+- [`.agents/AGENTS.md`](.agents/AGENTS.md) — shared, stack-agnostic agent instructions (reference copy).
+- [`.agents/agent-workflow.md`](.agents/agent-workflow.md) — detailed implementation workflow.
+- [`.agents/README.md`](.agents/README.md) — how to install the shared instructions into a coding agent.
+- `.kilo/` — local agent workspace and plans; ignored, never part of a stack.
+
+Start from this map plus the nearest `README.md`; the per-service details live in each stack's
+directory.
 
 ## Development environment
 
@@ -284,3 +313,29 @@ The root `Makefile`'s `run-update-all` iterates `EXECUTION_ORDER`, runs each ser
    the new service's port to the **Port allocation** list in this `AGENTS.md`.
 7. Run the validation checklist.
 8. Do not commit unless explicitly asked.
+
+## Code readability
+
+- The stack files are YAML, `Makefile`, shell recipes, `.env` and Markdown; keep the same names and
+  values consistent across `docker-compose.yml`, the service `Makefile`, `README.md` and the root
+  metadata.
+- Give non-obvious values a name at their owning scope: env vars in `.env.default`, Make variables
+  for repeated paths or ports, instead of inline magic values repeated across files.
+- Preserve existing env var names, host/container ports and volume paths when refactoring; they are
+  the user's contract in their `.env` and on-disk data.
+- Prefer flat, explicit compose files over abstractions that hide behavior.
+
+## Instruction and documentation router
+
+Read contextually; do not load every document for every task.
+
+| Task involves | Read |
+| --- | --- |
+| Any non-trivial implementation | [Shared agent instructions](.agents/AGENTS.md) and [Agent workflow](.agents/agent-workflow.md) |
+| A nested path | Every root-to-file `AGENTS.md` |
+| Adding or changing a service stack | *Checklist for adding a new service stack* in this file, then the upstream project docs |
+| Compose, env or Makefile conventions | *The five required files* and *Three deployment patterns* |
+| Choosing or reusing a host port | *Port allocation* in this file — do not scan compose files |
+| Root list, execution order or service naming | *Root-level changes* and *Validation checklist* |
+| Anything requiring Docker, a running stack or secrets | *Development environment* and the service `README.md` prerequisites |
+| A particular stack | Its nearest `README.md` |

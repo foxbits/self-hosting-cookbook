@@ -1,1 +1,5 @@
 .env
+
+# Local task-planning workspace: only the placeholder is tracked.
+docs/specs/*
+!docs/specs/.gitkeep
